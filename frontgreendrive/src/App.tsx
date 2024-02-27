@@ -1,23 +1,24 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from 'react';
+import axios from 'axios';
 
 function App() {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('/api/test'); // 注意这里是相对路径
+        console.log(response.data);
+      } catch (error) {
+        console.error('There was an error!', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        {/* 你的组件内容 */}
       </header>
     </div>
   );
