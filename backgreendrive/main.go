@@ -9,7 +9,7 @@ func main() {
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
 
-	r.PUT("/", func(c *gin.Context) {
+	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "hello world",
 		})
