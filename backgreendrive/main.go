@@ -1,13 +1,22 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
-	"github.com/luopanforever/backgreendrive/middlewares"
+	"github.com/luopanforever/backgreendrive/common"
+	"github.com/luopanforever/backgreendrive/config"
 )
 
 func main() {
 	r := gin.Default()
-	r.Use(middlewares.CORSMiddleware())
+	r.Use(common.CORSMiddleware())
+
+	// 初始化mongodb连接
+	config.ConnectDB()
+	if config.MongoDB != nil {
+		log.Println("Connected to MongoDB")
+	}
 
 	r.GET("/api/test", func(c *gin.Context) {
 		c.JSON(200, gin.H{
