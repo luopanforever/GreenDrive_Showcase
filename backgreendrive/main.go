@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/luopanforever/backgreendrive/common"
 	"github.com/luopanforever/backgreendrive/config"
 	"github.com/luopanforever/backgreendrive/controller"
 	"github.com/luopanforever/backgreendrive/repository"
@@ -14,7 +13,7 @@ import (
 
 func main() {
 	r := gin.Default()
-	r.Use(common.CORSMiddleware())
+	// r.Use(common.CORSMiddleware())
 
 	// 初始化mongodb连接
 	config.ConnectDB()
@@ -32,11 +31,13 @@ func main() {
 
 	r.GET("/car/:filename", carController.GetCarModelByFileName)
 
-	r.GET("/api/test", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "hello world",
-		})
-	})
+	// r.GET("/api/test", controller.Api)
+
+	// r.GET("/api/test", func(c *gin.Context) {
+	// 	c.JSON(200, gin.H{
+	// 		"message": "hello world",
+	// 	})
+	// })
 
 	r.Run() // 默认在0.0.0.0:8080启动服务
 }
