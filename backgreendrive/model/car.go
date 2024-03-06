@@ -1,10 +1,16 @@
 package model
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"time"
 
-type Car struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	Name      string             `bson:"name"`
-	ModelPath string             `bson:"modelPath"` // 存储3D模型文件路径
-	Metadata  map[string]string  `bson:"metadata"`  // 存储额外元数据，如作者、创建日期等
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
+
+// CarMetadata represents the metadata of a 3D car model stored in GridFS.
+type CarMetadata struct {
+	ID         primitive.ObjectID `bson:"_id,omitempty"`
+	Length     int64              `bson:"length"`
+	ChunkSize  int32              `bson:"chunkSize"`
+	UploadDate time.Time          `bson:"uploadDate"`
+	Filename   string             `bson:"filename"`
 }
