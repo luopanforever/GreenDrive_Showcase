@@ -5,7 +5,7 @@ function App() {
   // const [ state, setstate ] = useState()
   const fetchData = async () => {
     try {
-      const response = await axios.get('/api/test'); // 确保这个URL与你的后端路由匹配
+      const response = await axios.get('/car/testCar01.glb');  // /api/test /car/testCar01.glb
       console.log(response.data); // 这会在控制台中输出后端返回的数据
       // setstate(response.data)
     } catch (error) {
@@ -18,7 +18,7 @@ function App() {
       <header className="App-header">
         {/* 其他内容 */}
         {/* {state} */}
-        <button onClick={() => fetchData}>请求数据</button>
+        <button onClick={() => fetchData()}>请求数据</button>
       </header>
     </div>
   );
