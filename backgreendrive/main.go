@@ -6,9 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/luopanforever/backgreendrive/config"
-	"github.com/luopanforever/backgreendrive/controller"
-	"github.com/luopanforever/backgreendrive/repository"
-	"github.com/luopanforever/backgreendrive/service"
 )
 
 func main() {
@@ -23,21 +20,9 @@ func main() {
 		}
 	}()
 	// 获取MongoDB数据库实例
+
 	db := config.MongoDB.Database("tdCars")
-
-	carRepo := repository.NewCarRepository(db)
-	carService := service.NewCarService(carRepo)
-	carController := controller.NewCarController(carService)
-
-	r.GET("/car/:filename", carController.GetCarModelByFileName)
-
-	// r.GET("/api/test", controller.Api)
-
-	// r.GET("/api/test", func(c *gin.Context) {
-	// 	c.JSON(200, gin.H{
-	// 		"message": "hello world",
-	// 	})
-	// })
+	r = CollectRoute(r, db)
 
 	r.Run() // 默认在0.0.0.0:8080启动服务
 }
