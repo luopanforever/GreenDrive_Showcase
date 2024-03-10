@@ -8,9 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var MongoDB *mongo.Client
+var mongoDB *mongo.Client
 
-func ConnectDB() {
+func InItDB() *mongo.Client {
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatal(err)
@@ -29,5 +29,16 @@ func ConnectDB() {
 	// 	log.Fatal(err)
 	// }
 	print("连接成功\n")
-	MongoDB = client
+	mongoDB = client
+	return client
+}
+
+func GetDB() *mongo.Client {
+	return mongoDB
+}
+
+func Close(db *mongo.Client) {
+	if err := db.Disconnect(context.Background()); err != nil {
+		log.Fatalf("Error on disconnecting from MongoDB: %v", err)
+	}
 }

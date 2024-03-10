@@ -5,6 +5,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/luopanforever/backgreendrive/config"
 	"github.com/luopanforever/backgreendrive/model" // 替换为实际的模块路径
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,8 +19,8 @@ type CarRepository struct {
 }
 
 // NewCarRepository creates a new repository for cars.
-func NewCarRepository(db *mongo.Database) *CarRepository {
-	return &CarRepository{DB: db}
+func NewCarRepository() *CarRepository {
+	return &CarRepository{DB: config.GetDB().Database("tdCars")}
 }
 
 // FindCarModelByID retrieves a car model by its ID from GridFS.

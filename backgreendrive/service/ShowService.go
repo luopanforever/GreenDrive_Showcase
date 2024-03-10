@@ -13,7 +13,8 @@ type CarService struct {
 }
 
 // NewCarService creates a new car service.
-func NewCarService(carRepo *repository.CarRepository) *CarService {
+func NewCarService() *CarService {
+	carRepo := repository.NewCarRepository()
 	return &CarService{CarRepo: carRepo}
 }
 
