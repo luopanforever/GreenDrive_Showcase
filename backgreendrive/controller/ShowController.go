@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/luopanforever/backgreendrive/response"
 	"github.com/luopanforever/backgreendrive/service"
@@ -21,7 +22,10 @@ func NewCarController() *CarController {
 
 // GetCarModel handles the request to get a car model by ID.
 func (cc *CarController) GetCarModelByFileName(c *gin.Context) {
-	fileName := c.Param("filename") // Assuming the route parameter is named 'id'
+	// _ = c.Param("carId")
+	action := c.Param("action")
+	fileName := strings.TrimPrefix(action, "/")
+	// println(fileName)
 
 	carId, err := cc.CarService.GetCarIdByFileName(fileName)
 	if err != nil {

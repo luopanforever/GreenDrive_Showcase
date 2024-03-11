@@ -8,15 +8,7 @@ import (
 func CollectRoute(r *gin.Engine) *gin.Engine {
 
 	carController := controller.NewCarController()
-	r.GET("/car/:filename", carController.GetCarModelByFileName)
-
-	// r.GET("/api/test", controller.Api)
-
-	// r.GET("/api/test", func(c *gin.Context) {
-	// 	c.JSON(200, gin.H{
-	// 		"message": "hello world",
-	// 	})
-	// })
+	r.GET("/car/:carId/*action", carController.GetCarModelByFileName)
 
 	return r
 }
