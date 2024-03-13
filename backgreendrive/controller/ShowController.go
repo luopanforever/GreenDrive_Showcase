@@ -42,8 +42,3 @@ func (cc *CarController) GetCarModelByFileName(c *gin.Context) {
 	// Streaming the file to the client
 	c.DataFromReader(http.StatusOK, carMeta.Length, "application/octet-stream", file, nil)
 }
-func Api(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "hello world",
-	})
-}

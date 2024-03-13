@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"io"
+	"sync"
 	"time"
 
 	"github.com/luopanforever/backgreendrive/config"
@@ -18,9 +19,20 @@ type CarRepository struct {
 	DB *mongo.Database
 }
 
+var instance *CarRepository
+var once sync.Once
+
 // NewCarRepository creates a new repository for cars.
 func NewCarRepository() *CarRepository {
-	return &CarRepository{DB: config.GetDB().Database("tdCars")}
+	once.Do(func() {
+		instance = &CarRepository{DB: config.GetDB().Database("tdCars")}
+	})
+	return instance
+}
+
+// GetCarRepository returns the singleton instance of CarRepository.
+func GetCarRepository() *CarRepository {
+	return NewCarRepository() // This ensures the instance is created if it doesn't exist and returns the existing one if it does.
 }
 
 // FindCarModelByID retrieves a car model by its ID from GridFS.
