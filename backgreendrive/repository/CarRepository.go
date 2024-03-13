@@ -8,8 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/luopanforever/backgreendrive/config"
 	"github.com/luopanforever/backgreendrive/model" // 替换为实际的模块路径
+	"github.com/luopanforever/backgreendrive/response"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -98,3 +100,55 @@ func (r *CarRepository) FindAvailableName() (string, error) {
 		}
 	}
 }
+
+// AddCarName adds a new car name to the usedNames array in carNames collection.
+func (r *CarRepository) AddCarName(c *gin.Context) {
+	name := c.Param("carName")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	update := bson.M{"$push": bson.M{"usedNames": name}}
+	_, err := r.DB.Collection("carNames").UpdateOne(ctx, bson.M{}, update)
+
+	if err != nil {
+		response.Fail(c, "Failed to add car name", gin.H{"error": err.Error()})
+		return
+	}
+	response.Success(c, gin.H{"carname": name}, "add success")
+
+}
+
+// AddCarName adds a new car name to the usedNames array in carNames collection.
+// func (r *CarRepository) AddCarName(name string) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+
+// 	update := bson.M{"$push": bson.M{"usedNames": name}}
+// 	_, err := r.DB.Collection("carNames").UpdateOne(ctx, bson.M{}, update)
+// 	return err
+// }
+
+// RemoveCarName removes a car name from the usedNames array in carNames collection.
+func (r *CarRepository) RemoveCarName(c *gin.Context) {
+	name := c.Param("carName")
+	println(name)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	update := bson.M{"$pull": bson.M{"usedNames": name}}
+	_, err := r.DB.Collection("carNames").UpdateOne(ctx, bson.M{}, update)
+	if err != nil {
+		response.Fail(c, "Failed to delete car name", gin.H{"error": err.Error()})
+		return
+	}
+	response.Success(c, gin.H{"carname": name}, "delete success")
+}
+
+// func (r *CarRepository) RemoveCarName(name string) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+
+// 	update := bson.M{"$pull": bson.M{"usedNames": name}}
+// 	_, err := r.DB.Collection("carNames").UpdateOne(ctx, bson.M{}, update)
+// 	return err
+// }
