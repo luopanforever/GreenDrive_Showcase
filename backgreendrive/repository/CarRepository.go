@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"strconv"
 	"sync"
 	"time"
 
@@ -73,56 +75,26 @@ func (r *CarRepository) FindCarIdByFileName(fileName string) (primitive.ObjectID
 	return car.ID, nil
 }
 
-// type CarRepository struct {
-// 	Collection *mongo.Collection
-// }
+func (r *CarRepository) FindAvailableName() (string, error) {
+	var result struct {
+		UsedNames []string `bson:"usedNames"`
+	}
+	if err := r.DB.Collection("carNames").FindOne(context.Background(), bson.D{}).Decode(&result); err != nil {
+		return "", err
+	}
 
-// func NewCarRepository(db *mongo.Client, dbName, colName string) *CarRepository {
-// 	collection := db.Database(dbName).Collection(colName)
-// 	return &CarRepository{Collection: collection}
-// }
+	nameMap := make(map[int]bool)
+	for _, name := range result.UsedNames {
+		if len(name) > 3 {
+			if num, err := strconv.Atoi(name[3:]); err == nil {
+				nameMap[num] = true
+			}
+		}
+	}
 
-// // SaveCar saves a new car model into the database
-// func (r *CarRepository) SaveCar(car model.Car) (*mongo.InsertOneResult, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancel()
-
-// 	result, err := r.Collection.InsertOne(ctx, car)
-// 	return result, err
-// }
-
-// // FindAllCars retrieves all car models from the database
-// func (r *CarRepository) FindAllCars() ([]model.Car, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-// 	defer cancel()
-
-// 	var cars []model.Car
-// 	cursor, err := r.Collection.Find(ctx, bson.M{})
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer cursor.Close(ctx)
-
-// 	for cursor.Next(ctx) {
-// 		var car model.Car
-// 		cursor.Decode(&car)
-// 		cars = append(cars, car)
-// 	}
-
-// 	return cars, nil
-// }
-
-// func (r *CarRepository) FindCarByFilename(filename string) (*model.Car, error) {
-// 	var car model.Car
-// 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-// 	defer cancel()
-
-// 	filter := bson.M{"filename": filename}
-// 	println(filename)
-// 	err := r.Collection.FindOne(ctx, filter).Decode(&car)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return &car, nil
-// }
+	for i := 1; ; i++ {
+		if !nameMap[i] {
+			return fmt.Sprintf("car%02d", i), nil
+		}
+	}
+}

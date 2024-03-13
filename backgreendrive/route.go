@@ -7,8 +7,9 @@ import (
 
 func CollectRoute(r *gin.Engine) *gin.Engine {
 
-	carController := controller.NewCarController()
-	r.GET("/car/show/:carId/*action", carController.GetCarModelByFileName)
-
+	showController := controller.NewShowController()
+	findNameController := controller.NewNameController()
+	r.GET("/car/show/:carId/*action", showController.GetCarModelByFileName)
+	r.GET("/car/names/available", findNameController.GetAvailableName)
 	return r
 }

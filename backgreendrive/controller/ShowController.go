@@ -15,8 +15,8 @@ type CarController struct {
 }
 
 // NewCarController creates a new car controller.
-func NewCarController() *CarController {
-	carService := service.NewCarService()
+func NewShowController() *CarController {
+	carService := service.NewShowService()
 	return &CarController{CarService: carService}
 }
 
