@@ -101,6 +101,17 @@ func (r *CarRepository) FindAvailableName() (string, error) {
 	}
 }
 
+// 获取汽车名字列表
+func (r *CarRepository) GetNameList() ([]string, error) {
+	var result struct {
+		UsedNames []string `bson:"usedNames"`
+	}
+	if err := r.DB.Collection("carNames").FindOne(context.Background(), bson.D{}).Decode(&result); err != nil {
+		return nil, err
+	}
+	return result.UsedNames, nil
+}
+
 // AddCarName adds a new car name to the usedNames array in carNames collection.
 func (r *CarRepository) AddCarName(c *gin.Context) {
 	name := c.Param("carName")

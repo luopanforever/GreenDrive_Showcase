@@ -14,3 +14,7 @@ func NewNameService() *NameService {
 func (service *NameService) FindAvailableName() (string, error) {
 	return service.Repo.FindAvailableName()
 }
+
+func (service *NameService) GetNameList() ([]string, error) {
+	return service.Repo.GetNameList()
+}
