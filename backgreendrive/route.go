@@ -18,8 +18,11 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.GET("/car/names/list", nameController.GetNameList)
 
 	// 测试小功能点
-	r.POST("/car/add/:carName", repository.GetCarRepository().AddCarName)
-	r.DELETE("/car/remove/:carName", repository.GetCarRepository().RemoveCarName)
+	// carname管理测试
+	r.POST("/car/names/add/:carName", repository.GetCarRepository().AddCarName)
+	r.DELETE("/car/names/remove/:carName", repository.GetCarRepository().RemoveCarName)
+	// modeldata管理测试
+	r.POST("/car/model/add/:carName", repository.GetCarRepository().AddResourceToModel)
 
 	return r
 }

@@ -14,3 +14,8 @@ type CarMetadata struct {
 	UploadDate time.Time          `bson:"uploadDate"`
 	Filename   string             `bson:"filename"`
 }
+
+type ResourceInfo struct {
+	ResourceName string             `json:"resourceName"`
+	FileID       primitive.ObjectID `json:"fileId"`
+}

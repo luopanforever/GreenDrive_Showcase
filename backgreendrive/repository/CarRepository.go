@@ -101,6 +101,7 @@ func (r *CarRepository) FindAvailableName() (string, error) {
 	}
 }
 
+// name管理
 // 获取汽车名字列表
 func (r *CarRepository) GetNameList() ([]string, error) {
 	var result struct {
@@ -161,5 +162,51 @@ func (r *CarRepository) RemoveCarName(c *gin.Context) {
 
 // 	update := bson.M{"$pull": bson.M{"usedNames": name}}
 // 	_, err := r.DB.Collection("carNames").UpdateOne(ctx, bson.M{}, update)
+// 	return err
+// }
+
+// model管理
+func (r *CarRepository) AddResourceToModel(c *gin.Context) {
+	var resourceInfo model.ResourceInfo
+	if err := c.BindJSON(&resourceInfo); err != nil {
+		response.Fail(c, "Failed to parse request body", gin.H{"error": err.Error()})
+		return
+	}
+	modelName := c.Param("carName")
+	resourceName := resourceInfo.ResourceName
+	resourceFileId := resourceInfo.FileID
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	update := bson.M{
+		"$push": bson.M{
+			"resources": bson.M{
+				"name":   resourceName,
+				"fileId": resourceFileId,
+			},
+		},
+	}
+	_, err := r.DB.Collection("modelData").UpdateOne(ctx, bson.M{"modelName": modelName}, update)
+	if err != nil {
+		response.Fail(c, "Failed to add model resource", gin.H{"error": err.Error()})
+		return
+	}
+	response.Success(c, gin.H{"carname": modelName, "objectId": resourceFileId}, "add success")
+}
+
+// func (r *CarRepository) AddResourceToModel(modelName string, resourceName string, resourceFileId primitive.ObjectID) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+
+// 	update := bson.M{
+// 		"$push": bson.M{
+// 			"resources": bson.M{
+// 				"name":   resourceName,
+// 				"fileId": resourceFileId,
+// 			},
+// 		},
+// 	}
+// 	_, err := r.DB.Collection("modelData").UpdateOne(ctx, bson.M{"modelName": modelName}, update)
 // 	return err
 // }
