@@ -86,20 +86,37 @@ func (r *CarRepository) FindAvailableName() (string, error) {
 		return "", err
 	}
 
-	nameMap := make(map[int]bool)
+	maxNum := 0
 	for _, name := range result.UsedNames {
 		if len(name) > 3 {
+			// 从名称中提取编号部分，并转换为整数
 			if num, err := strconv.Atoi(name[3:]); err == nil {
-				nameMap[num] = true
+				// 更新最大编号
+				if num > maxNum {
+					maxNum = num
+				}
 			}
 		}
 	}
 
-	for i := 1; ; i++ {
-		if !nameMap[i] {
-			return fmt.Sprintf("car%02d", i), nil
-		}
-	}
+	// 生成下一个可用的名称，即最大编号加1
+	return fmt.Sprintf("car%d", maxNum+1), nil
+
+	// [car1, car3] return car2
+	// nameMap := make(map[int]bool)
+	// for _, name := range result.UsedNames {
+	// 	if len(name) > 3 {
+	// 		if num, err := strconv.Atoi(name[3:]); err == nil {
+	// 			nameMap[num] = true
+	// 		}
+	// 	}
+	// }
+
+	// for i := 1; ; i++ {
+	// 	if !nameMap[i] {
+	// 		return fmt.Sprintf("car%02d", i), nil
+	// 	}
+	// }
 }
 
 // name管理
