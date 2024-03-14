@@ -167,7 +167,7 @@ func (r *CarRepository) RemoveCarName(c *gin.Context) {
 // }
 
 // model管理
-func (r *CarRepository) AddResourceToModel(c *gin.Context) {
+func (r *CarRepository) AddResourceToModelTest(c *gin.Context) {
 	var resourceInfo model.ResourceInfo
 	if err := c.BindJSON(&resourceInfo); err != nil {
 		response.Fail(c, "Failed to parse request body", gin.H{"error": err.Error()})
@@ -193,7 +193,7 @@ func (r *CarRepository) AddResourceToModel(c *gin.Context) {
 		response.Fail(c, "Failed to add model resource", gin.H{"error": err.Error()})
 		return
 	}
-	response.Success(c, gin.H{"carname": modelName, "objectId": resourceFileId}, "add success")
+	response.Success(c, gin.H{"resource name": modelName, "objectId": resourceFileId}, "add success")
 }
 
 // func (r *CarRepository) AddResourceToModel(modelName string, resourceName string, resourceFileId primitive.ObjectID) error {
@@ -212,7 +212,7 @@ func (r *CarRepository) AddResourceToModel(c *gin.Context) {
 // 	return err
 // }
 
-func (r *CarRepository) RemoveResourceFromModel(c *gin.Context) {
+func (r *CarRepository) RemoveResourceFromModelTest(c *gin.Context) {
 	modelName := c.Param("carName")
 	action := c.Param("action")
 	resourceName := strings.TrimPrefix(action, "/")
@@ -248,4 +248,47 @@ func (r *CarRepository) RemoveResourceFromModel(c *gin.Context) {
 // 	}
 // 	_, err := r.DB.Collection("modelData").UpdateOne(ctx, bson.M{"modelName": modelName}, update)
 // 	return err
+// }
+
+func (r *CarRepository) CreateModelDataTest(c *gin.Context) {
+
+	var resourceInfo model.ResourceInfo
+	if err := c.BindJSON(&resourceInfo); err != nil {
+		response.Fail(c, "Failed to parse request body", gin.H{"error": err.Error()})
+		return
+	}
+
+	modelName := resourceInfo.ResourceName
+	modelFileId := resourceInfo.FileID
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	newModelData := bson.M{
+		"modelName":   modelName,
+		"modelFileId": modelFileId,
+		"resources":   []bson.M{}, // 初始化为空的数组
+	}
+
+	_, err := r.DB.Collection("modelData").InsertOne(ctx, newModelData)
+	if err != nil {
+		response.Fail(c, "Failed to create model data", gin.H{"error": err.Error()})
+		return
+	}
+
+	response.Success(c, gin.H{"car name": modelName, "objectId": modelFileId}, "create success")
+}
+
+// func (r *CarRepository) CreateModelData(modelName string, modelFileId primitive.ObjectID) error {
+//     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+//     defer cancel()
+
+//     newModelData := bson.M{
+//         "modelName":   modelName,
+//         "modelFileId": modelFileId,
+//         "resources":   []bson.M{}, // 初始化为空的数组
+//     }
+
+//     _, err := r.DB.Collection("modelData").InsertOne(ctx, newModelData)
+//     return err
 // }

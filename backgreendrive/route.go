@@ -10,7 +10,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 
 	// 展示管理
 	showController := controller.NewShowController()
-	r.GET("/car/show/:carId/*action", showController.GetCarModelByFileName)
+	r.GET("/car/show/:carName/*action", showController.GetCarModelByFileName)
 
 	// 汽车名字管理
 	nameController := controller.NewNameController()
@@ -22,7 +22,8 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.POST("/car/names/add/:carName", repository.GetCarRepository().AddCarName)
 	r.DELETE("/car/names/remove/:carName", repository.GetCarRepository().RemoveCarName)
 	// modeldata管理测试
-	r.POST("/car/model/add/:carName", repository.GetCarRepository().AddResourceToModel)
-	r.DELETE("/car/model/delete/:carName/*action", repository.GetCarRepository().RemoveResourceFromModel)
+	r.POST("/car/model/add/resource/:carName", repository.GetCarRepository().AddResourceToModelTest)
+	r.DELETE("/car/model/delete/resource/:carName/*action", repository.GetCarRepository().RemoveResourceFromModelTest)
+	r.POST("/car/model/add", repository.GetCarRepository().CreateModelDataTest)
 	return r
 }
