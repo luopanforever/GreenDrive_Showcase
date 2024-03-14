@@ -12,6 +12,13 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	showController := controller.NewShowController()
 	r.GET("/car/show/:carName/*action", showController.GetCarModelByFileName)
 
+	// 上传文件
+	r.POST("/car/upload", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "hello world",
+		})
+	})
+
 	// 汽车名字管理
 	nameController := controller.NewNameController()
 	r.GET("/car/names/available", nameController.FindAvailableName)
