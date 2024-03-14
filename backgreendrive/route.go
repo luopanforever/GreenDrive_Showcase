@@ -26,5 +26,6 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.DELETE("/car/model/delete/resource/:carName/*action", repository.GetCarRepository().RemoveResourceFromModelTest)
 	r.POST("/car/model/add", repository.GetCarRepository().CreateModelDataTest)
 	r.DELETE("/car/model/delete/:modelName", repository.GetCarRepository().DeleteModelDataTest)
+
 	return r
 }
