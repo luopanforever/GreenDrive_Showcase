@@ -292,3 +292,27 @@ func (r *CarRepository) CreateModelDataTest(c *gin.Context) {
 //     _, err := r.DB.Collection("modelData").InsertOne(ctx, newModelData)
 //     return err
 // }
+
+func (r *CarRepository) DeleteModelDataTest(c *gin.Context) {
+	modelName := c.Param("modelName")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{"modelName": modelName}
+	_, err := r.DB.Collection("modelData").DeleteOne(ctx, filter)
+	if err != nil {
+		response.Fail(c, "Failed to drop model data", gin.H{"error": err.Error()})
+		return
+	}
+
+	response.Success(c, gin.H{"car name": modelName}, "drop success")
+}
+
+// func (r *CarRepository) DeleteModelData(modelName string) error {
+//     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+//     defer cancel()
+
+//     filter := bson.M{"modelName": modelName}
+//     _, err := r.DB.Collection("modelData").DeleteOne(ctx, filter)
+//     return err
+// }
