@@ -86,6 +86,7 @@ func (r *CarRepository) FindAvailableName() (string, error) {
 		return "", err
 	}
 
+	// [car1, car3] return car4
 	maxNum := 0
 	for _, name := range result.UsedNames {
 		if len(name) > 3 {

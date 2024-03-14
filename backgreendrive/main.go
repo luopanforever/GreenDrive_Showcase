@@ -10,7 +10,6 @@ import (
 
 func main() {
 	r := gin.Default()
-	// r.Use(common.CORSMiddleware())
 	// 配置CORS中间件
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"}, // 允许的源，根据需要调整

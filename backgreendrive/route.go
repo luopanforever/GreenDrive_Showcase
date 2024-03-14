@@ -13,7 +13,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.GET("/car/show/:carName/*action", showController.GetCarModelByFileName)
 
 	// 上传文件
-	r.POST("/car/upload") //后期需要优化为"/car/upload/:carId"
+	r.POST("/car/upload", controller.UploadController) //后期需要优化为"/car/upload/:carId"
 
 	// 汽车名字管理
 	nameController := controller.NewNameController()
