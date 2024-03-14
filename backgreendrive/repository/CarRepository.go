@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -204,6 +205,44 @@ func (r *CarRepository) AddResourceToModel(c *gin.Context) {
 // 			"resources": bson.M{
 // 				"name":   resourceName,
 // 				"fileId": resourceFileId,
+// 			},
+// 		},
+// 	}
+// 	_, err := r.DB.Collection("modelData").UpdateOne(ctx, bson.M{"modelName": modelName}, update)
+// 	return err
+// }
+
+func (r *CarRepository) RemoveResourceFromModel(c *gin.Context) {
+	modelName := c.Param("carName")
+	action := c.Param("action")
+	resourceName := strings.TrimPrefix(action, "/")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	update := bson.M{
+		"$pull": bson.M{
+			"resources": bson.M{
+				"name": resourceName,
+			},
+		},
+	}
+	_, err := r.DB.Collection("modelData").UpdateOne(ctx, bson.M{"modelName": modelName}, update)
+	if err != nil {
+		response.Fail(c, "Failed to delete model resource", gin.H{"error": err.Error()})
+		return
+	}
+
+	response.Success(c, gin.H{"delete resource name": resourceName}, "delete success")
+}
+
+// func (r *CarRepository) RemoveResourceFromModel(modelName string, resourceName string) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+
+// 	update := bson.M{
+// 		"$pull": bson.M{
+// 			"resources": bson.M{
+// 				"name": resourceName,
 // 			},
 // 		},
 // 	}
