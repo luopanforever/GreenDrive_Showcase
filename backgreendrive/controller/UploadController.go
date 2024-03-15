@@ -19,6 +19,7 @@ func NewUploadController(uploadService *service.UploadService) *UploadController
 }
 
 func (ctrl *UploadController) UploadZips(c *gin.Context) {
+
 	carId := c.Param("carId")
 
 	// 使用 MultipartForm 方法来处理多个文件
