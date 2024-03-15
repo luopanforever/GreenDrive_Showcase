@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/luopanforever/backgreendrive/controller"
 	"github.com/luopanforever/backgreendrive/repository"
+	"github.com/luopanforever/backgreendrive/service"
 )
 
 func CollectRoute(r *gin.Engine) *gin.Engine {
@@ -13,7 +14,8 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	r.GET("/car/show/:carName/*action", showController.GetCarModelByFileName)
 
 	// 上传文件
-	r.POST("/car/upload", controller.UploadController) //后期需要优化为"/car/upload/:carId"
+	// r.POST("/car/upload", controller.UploadController_) //后期需要优化为"/car/upload/:carId"
+	r.POST("/car/upload/:carId", controller.NewUploadController(service.NewUploadService()).UploadZip)
 
 	// 汽车名字管理
 	nameController := controller.NewNameController()

@@ -5,9 +5,43 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/luopanforever/backgreendrive/response"
+	"github.com/luopanforever/backgreendrive/service"
 )
 
-func UploadController(c *gin.Context) {
+type UploadController struct {
+	uploadService *service.UploadService
+}
+
+func NewUploadController(uploadService *service.UploadService) *UploadController {
+	return &UploadController{uploadService: uploadService}
+}
+
+func (ctrl *UploadController) UploadZip(c *gin.Context) {
+	carId := c.Param("carId")
+	file, err := c.FormFile("file")
+	if err != nil {
+		response.Fail(c, "Failed to retrieve file", gin.H{"error": err.Error()})
+		return
+	}
+
+	// 保存ZIP文件
+	zipFilePath, err := ctrl.uploadService.SaveZipFile(file, carId)
+	if err != nil {
+		response.Fail(c, "Failed to save zip file", gin.H{"error": err.Error()})
+		return
+	}
+
+	// 解压ZIP文件
+	unzipDir, err := ctrl.uploadService.UnzipFiles(zipFilePath, carId)
+	if err != nil {
+		response.Fail(c, "Failed to unzip files", gin.H{"error": err.Error()})
+		return
+	}
+
+	response.Success(c, gin.H{"unzipDir": unzipDir}, "Files uploaded and extracted successfully")
+}
+
+func UploadController_(c *gin.Context) {
 	println("进来了")
 	// 解析表单数据，1 << 30 设置最大内存限制为1GB
 	if err := c.Request.ParseMultipartForm(1 << 30); err != nil {
@@ -24,7 +58,7 @@ func UploadController(c *gin.Context) {
 	files := form.File["upload[]"] // "upload[]" 是前端表单中文件输入字段的名称
 
 	for _, file := range files {
-		println(file)
+		println(file.Filename)
 	}
 
 	// for _, file := range files {
