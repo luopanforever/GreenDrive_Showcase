@@ -13,21 +13,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/gridfs"
 )
 
-type FileChunkRepository struct {
+type ShowRepository struct {
 	DB *mongo.Database
 }
 
-// NewFileChunkRepository creates a new repository for cars.
-func newFileChunkRepository() *FileChunkRepository {
-	return (*FileChunkRepository)(NewRepository())
+// NewShowRepository creates a new repository for cars.
+func newShowRepository() *ShowRepository {
+	return (*ShowRepository)(NewRepository())
 }
 
-func GetFileChunkRepository() *FileChunkRepository {
-	return newFileChunkRepository()
+func GetShowRepository() *ShowRepository {
+	return newShowRepository()
 }
 
 // 通过_id查找相应资源
-func (r *FileChunkRepository) FindCarModelByID(id primitive.ObjectID) (entity.CarMetadata, io.Reader, error) {
+func (r *ShowRepository) FindCarModelByID(id primitive.ObjectID) (entity.CarMetadata, io.Reader, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -54,7 +54,7 @@ func (r *FileChunkRepository) FindCarModelByID(id primitive.ObjectID) (entity.Ca
 }
 
 // 通过汽车名查找汽车id
-func (r *FileChunkRepository) FindCarIdByFileName(fileName string) (primitive.ObjectID, error) {
+func (r *ShowRepository) FindCarIdByFileName(fileName string) (primitive.ObjectID, error) {
 	var car entity.CarMetadata
 	filter := bson.M{"filename": fileName}
 	err := r.DB.Collection("fs.files").FindOne(context.Background(), filter).Decode(&car)

@@ -8,18 +8,18 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type FileChunkService struct {
-	CarRepo *repository.FileChunkRepository
+type ShowService struct {
+	CarRepo *repository.ShowRepository
 }
 
 // NewCarService creates a new car service.
-func NewShowService() *FileChunkService {
-	carRepo := repository.GetFileChunkRepository()
-	return &FileChunkService{CarRepo: carRepo}
+func NewShowService() *ShowService {
+	carRepo := repository.GetShowRepository()
+	return &ShowService{CarRepo: carRepo}
 }
 
 // GetCarModelByID gets a car model by ID.
-func (s *FileChunkService) GetCarModelByID(id primitive.ObjectID) (entity.CarMetadata, io.Reader, error) {
+func (s *ShowService) GetCarModelByID(id primitive.ObjectID) (entity.CarMetadata, io.Reader, error) {
 	// id, err := primitive.ObjectIDFromHex(idStr)
 	// if err != nil {
 	// 	return model.CarMetadata{}, nil, err
@@ -29,6 +29,6 @@ func (s *FileChunkService) GetCarModelByID(id primitive.ObjectID) (entity.CarMet
 }
 
 // GetCarIdByFileName gets a car's ID by its file name.
-func (s *FileChunkService) GetCarIdByFileName(fileName string) (primitive.ObjectID, error) {
+func (s *ShowService) GetCarIdByFileName(fileName string) (primitive.ObjectID, error) {
 	return s.CarRepo.FindCarIdByFileName(fileName)
 }
