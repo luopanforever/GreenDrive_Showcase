@@ -15,7 +15,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 
 	// 上传文件
 	// r.POST("/car/upload", controller.UploadController_) //后期需要优化为"/car/upload/:carId"
-	r.POST("/car/upload/:carId", controller.NewUploadController(service.NewUploadService()).UploadZip)
+	r.POST("/car/upload/:carId", controller.NewUploadController(service.NewUploadService()).UploadZips)
 
 	// 汽车名字管理
 	nameController := controller.NewNameController()
