@@ -3,11 +3,11 @@ package service
 import "github.com/luopanforever/backgreendrive/repository" // 替换为实际的包路径
 
 type NameService struct {
-	Repo *repository.CarRepository
+	Repo *repository.NameRepository
 }
 
 func NewNameService() *NameService {
-	newFindRepo := repository.GetCarRepository()
+	newFindRepo := repository.GetNameRepository()
 	return &NameService{Repo: newFindRepo}
 }
 

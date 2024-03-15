@@ -3,23 +3,23 @@ package service
 import (
 	"io"
 
-	"github.com/luopanforever/backgreendrive/model"
+	"github.com/luopanforever/backgreendrive/entity"
 	"github.com/luopanforever/backgreendrive/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type CarService struct {
-	CarRepo *repository.CarRepository
+type FileChunkService struct {
+	CarRepo *repository.FileChunkRepository
 }
 
 // NewCarService creates a new car service.
-func NewShowService() *CarService {
-	carRepo := repository.GetCarRepository()
-	return &CarService{CarRepo: carRepo}
+func NewShowService() *FileChunkService {
+	carRepo := repository.GetFileChunkRepository()
+	return &FileChunkService{CarRepo: carRepo}
 }
 
 // GetCarModelByID gets a car model by ID.
-func (s *CarService) GetCarModelByID(id primitive.ObjectID) (model.CarMetadata, io.Reader, error) {
+func (s *FileChunkService) GetCarModelByID(id primitive.ObjectID) (entity.CarMetadata, io.Reader, error) {
 	// id, err := primitive.ObjectIDFromHex(idStr)
 	// if err != nil {
 	// 	return model.CarMetadata{}, nil, err
@@ -29,6 +29,6 @@ func (s *CarService) GetCarModelByID(id primitive.ObjectID) (model.CarMetadata, 
 }
 
 // GetCarIdByFileName gets a car's ID by its file name.
-func (s *CarService) GetCarIdByFileName(fileName string) (primitive.ObjectID, error) {
+func (s *FileChunkService) GetCarIdByFileName(fileName string) (primitive.ObjectID, error) {
 	return s.CarRepo.FindCarIdByFileName(fileName)
 }

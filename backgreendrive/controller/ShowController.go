@@ -10,18 +10,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CarController struct {
-	CarService *service.CarService
+type FileChunkController struct {
+	CarService *service.FileChunkService
 }
 
 // NewCarController creates a new car controller.
-func NewShowController() *CarController {
+func NewShowController() *FileChunkController {
 	carService := service.NewShowService()
-	return &CarController{CarService: carService}
+	return &FileChunkController{CarService: carService}
 }
 
 // GetCarModel handles the request to get a car model by ID.
-func (cc *CarController) GetCarModelByFileName(c *gin.Context) {
+func (cc *FileChunkController) GetCarModelByFileName(c *gin.Context) {
 	// _ = c.Param("carId")
 	action := c.Param("action")
 	fileName := strings.TrimPrefix(action, "/")

@@ -24,13 +24,13 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 
 	// 测试小功能点
 	// carname管理测试
-	r.POST("/car/names/add/:carName", repository.GetCarRepository().AddCarName)
-	r.DELETE("/car/names/remove/:carName", repository.GetCarRepository().RemoveCarName)
+	r.POST("/car/names/add/:carName", repository.GetNameRepository().AddCarNameTest)
+	r.DELETE("/car/names/remove/:carName", repository.GetNameRepository().RemoveCarNameTest)
 	// modeldata管理测试
-	r.POST("/car/model/add/resource/:carName", repository.GetCarRepository().AddResourceToModelTest)
-	r.DELETE("/car/model/delete/resource/:carName/*action", repository.GetCarRepository().RemoveResourceFromModelTest)
-	r.POST("/car/model/add", repository.GetCarRepository().CreateModelDataTest)
-	r.DELETE("/car/model/delete/:modelName", repository.GetCarRepository().DeleteModelDataTest)
+	r.POST("/car/model/add/resource/:carName", repository.GetModelRepository().AddResourceToModelTest)
+	r.DELETE("/car/model/delete/resource/:carName/*action", repository.GetModelRepository().RemoveResourceFromModelTest)
+	r.POST("/car/model/add", repository.GetModelRepository().CreateModelDataTest)
+	r.DELETE("/car/model/delete/:modelName", repository.GetModelRepository().DeleteModelDataTest)
 
 	return r
 }
