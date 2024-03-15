@@ -6,7 +6,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/luopanforever/backgreendrive/config"
-	"github.com/luopanforever/backgreendrive/test"
 )
 
 func main() {
@@ -26,6 +25,9 @@ func main() {
 	defer config.Close(deClose)
 
 	r = CollectRoute(r)
-	test.Test()
+
+	// 测试用
+	// test.Test_delete_file_chunk_byId()
+
 	r.Run() // 默认在0.0.0.0:8080启动服务
 }

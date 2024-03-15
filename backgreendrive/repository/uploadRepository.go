@@ -24,7 +24,7 @@ func GetUploadRepository() *UploadRepository {
 	return newUploadRepository()
 }
 
-// 添加实打实的资源 /tmp/unzipped/car?
+// 添加实打实的资源 /tmp/unzipped/car? 返回唯一_id
 func (r *UploadRepository) UploadFsFileChunkModel(filePath, fileName, carId string) (primitive.ObjectID, error) {
 
 	// 创建一个新的 GridFS bucket
@@ -46,6 +46,7 @@ func (r *UploadRepository) UploadFsFileChunkModel(filePath, fileName, carId stri
 		return primitive.NilObjectID, err
 	}
 
+	// 只修改3d汽车gltf的名字
 	if strings.HasSuffix(fileName, ".gltf") {
 		fileName = carId + ".gltf"
 	}
@@ -67,4 +68,21 @@ func (r *UploadRepository) UploadFsFileChunkModel(filePath, fileName, carId stri
 
 	// 返回文件ID
 	return uploadStream.FileID.(primitive.ObjectID), nil
+}
+
+func (r *UploadRepository) DeleteFsFileById(fileId primitive.ObjectID) error {
+	// 创建一个新的 GridFS bucket
+	bucket, err := gridfs.NewBucket(r.DB)
+	if err != nil {
+		return err
+	}
+
+	// 删除文件
+	err = bucket.Delete(fileId)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("File with ID %s deleted successfully.\n", fileId.Hex())
+	return nil
 }
