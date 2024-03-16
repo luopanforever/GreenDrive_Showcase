@@ -16,6 +16,13 @@ type CarMetadata struct {
 }
 
 type ResourceInfo struct {
-	ResourceName string             `json:"resourceName"`
-	FileID       primitive.ObjectID `json:"fileId"`
+	Name   string             `json:"name"`
+	FileId primitive.ObjectID `json:"fileId"`
+}
+
+type ModelData struct {
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	ModelName   string             `bson:"modelName"`
+	ModelFileId primitive.ObjectID `bson:"modelFileId"`
+	Resources   []ResourceInfo     `bson:"resources"`
 }

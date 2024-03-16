@@ -189,6 +189,37 @@ func (ctrl *UploadController) DeleteAllFiles(c *gin.Context) {
 	response.Success(c, nil, "All files deleted successfully")
 }
 
+func (ctrl *UploadController) DeleteCar(c *gin.Context) {
+	carName := c.Param("carName") + ".gltf"
+
+	// 获取汽车资源的modelData
+	modelData, err := ctrl.modelRepository.FindModelDataByCarName(carName)
+	if err != nil {
+		response.Fail(c, "Failed to find car model data", gin.H{"error": err.Error()})
+		return
+	}
+	println("modeldata:")
+	// 删除汽车所有资源
+	if err := ctrl.uploadService.DeleteCarResources(*modelData); err != nil {
+		response.Fail(c, "Failed to delete car resources", gin.H{"error": err.Error()})
+		return
+	}
+
+	// 删除modelData记录
+	if err := ctrl.modelRepository.DeleteModelData(carName); err != nil {
+		response.Fail(c, "Failed to delete car model data", gin.H{"error": err.Error()})
+		return
+	}
+
+	// 从carNames中移除该汽车名
+	if err := ctrl.nameService.RemoveCarName(strings.TrimSuffix(carName, ".gltf")); err != nil {
+		response.Fail(c, "Failed to remove car name", gin.H{"error": err.Error()})
+		return
+	}
+
+	response.Success(c, nil, "Car and all related resources deleted successfully")
+}
+
 func incrementNumberSuffix(str string) (string, error) {
 	// 找到字符串中第一个数字的位置
 	index := strings.IndexFunc(str, func(r rune) bool {

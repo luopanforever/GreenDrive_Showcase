@@ -18,3 +18,7 @@ func (service *NameService) FindAvailableName() (string, error) {
 func (service *NameService) GetNameList() ([]string, error) {
 	return service.Repo.GetNameList()
 }
+
+func (s *NameService) RemoveCarName(name string) error {
+	return s.Repo.RemoveCarName(name)
+}

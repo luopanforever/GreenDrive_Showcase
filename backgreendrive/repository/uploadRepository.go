@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/luopanforever/backgreendrive/entity"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -71,6 +72,29 @@ func (r *UploadRepository) UploadFsFileChunkModel(filePath, fileName, carId stri
 
 	// 返回文件ID
 	return uploadStream.FileID.(primitive.ObjectID), nil
+}
+
+func (r *UploadRepository) DeleteCarResources(modelData entity.ModelData) error {
+	// 创建一个新的 GridFS bucket
+	bucket, err := gridfs.NewBucket(r.DB)
+	if err != nil {
+		return err
+	}
+
+	// 删除模型文件
+	if err := bucket.Delete(modelData.ModelFileId); err != nil {
+		return err
+	}
+
+	// 删除其他资源文件
+	for _, resource := range modelData.Resources {
+		if err := bucket.Delete(resource.FileId); err != nil {
+			return err
+		}
+	}
+
+	fmt.Println("All car resources deleted successfully.")
+	return nil
 }
 
 func (r *UploadRepository) DeleteFsFileById(fileId primitive.ObjectID) error {

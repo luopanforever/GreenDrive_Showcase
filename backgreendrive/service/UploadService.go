@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/luopanforever/backgreendrive/entity"
 	"github.com/luopanforever/backgreendrive/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -121,4 +122,8 @@ func (s *UploadService) UploadFsFileChunkModel(filePath, fileName, carId string)
 func (s *UploadService) DeleteAllFiles() error {
 	err := s.UploadRepo.DeleteAllFsFiles()
 	return err
+}
+
+func (s *UploadService) DeleteCarResources(modelData entity.ModelData) error {
+	return s.UploadRepo.DeleteCarResources(modelData)
 }

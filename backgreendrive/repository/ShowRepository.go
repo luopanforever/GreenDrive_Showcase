@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/luopanforever/backgreendrive/entity" // 替换为实际的模块路径
@@ -50,6 +51,58 @@ func (r *ShowRepository) FindCarModelByID(id primitive.ObjectID) (entity.CarMeta
 		return entity.CarMetadata{}, nil, err
 	}
 
+	return carMeta, dStream, nil
+}
+
+func (r *ShowRepository) FindCarModelByCarNameAndAction(carName, fileName string) (entity.CarMetadata, io.Reader, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	println("进入repository中")
+	bucket, err := gridfs.NewBucket(r.DB)
+	if err != nil {
+		return entity.CarMetadata{}, nil, err
+	}
+	var modelData entity.ModelData
+
+	println("准备获取modeldata数据")
+	err = r.DB.Collection("modelData").FindOne(ctx, bson.M{"modelName": carName + ".gltf"}).Decode(&modelData)
+	if err != nil {
+		return entity.CarMetadata{}, nil, err
+	}
+	println("modeldata:")
+	println("modelname:", modelData.ModelName)
+	println("modelfileid:", modelData.ModelFileId.String())
+	println("")
+	println("开始要查找的resource文件是否存在:", fileName)
+	var fileId primitive.ObjectID
+	if strings.HasSuffix(fileName, ".gltf") {
+		fileId = modelData.ModelFileId
+		println("匹配到了是.gltf文件")
+	} else {
+		println("不是.gltf文件,开始遍历每一个resource文件名")
+		for _, resource := range modelData.Resources {
+			println("resource name: ", resource.Name)
+			if resource.Name == fileName {
+				fileId = resource.FileId
+				println("匹配到了是resource文件,文件名为: ", resource.Name)
+				break
+			}
+		}
+
+	}
+	println("开始获取要查找资源的元信息")
+	var carMeta entity.CarMetadata
+	err = r.DB.Collection("fs.files").FindOne(ctx, bson.M{"_id": fileId}).Decode(&carMeta)
+	if err != nil {
+		return entity.CarMetadata{}, nil, err
+	}
+	println("获取完毕")
+	println("开始用gridfs传输资源")
+	dStream, err := bucket.OpenDownloadStream(fileId)
+	if err != nil {
+		return entity.CarMetadata{}, nil, err
+	}
+	println("传输完毕")
 	return carMeta, dStream, nil
 }
 

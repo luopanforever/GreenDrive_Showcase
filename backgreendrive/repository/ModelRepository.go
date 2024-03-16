@@ -33,8 +33,8 @@ func (r *ModelRepository) AddResourceToModelTest(c *gin.Context) {
 		return
 	}
 	modelName := c.Param("carName")
-	resourceName := resourceInfo.ResourceName
-	resourceFileId := resourceInfo.FileID
+	resourceName := resourceInfo.Name
+	resourceFileId := resourceInfo.FileId
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -116,8 +116,8 @@ func (r *ModelRepository) CreateModelDataTest(c *gin.Context) {
 		return
 	}
 
-	modelName := resourceInfo.ResourceName
-	modelFileId := resourceInfo.FileID
+	modelName := resourceInfo.Name
+	modelFileId := resourceInfo.FileId
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -171,4 +171,18 @@ func (r *ModelRepository) DeleteModelData(modelName string) error {
 	filter := bson.M{"modelName": modelName}
 	_, err := r.DB.Collection("modelData").DeleteOne(ctx, filter)
 	return err
+}
+
+func (r *ModelRepository) FindModelDataByCarName(carName string) (*entity.ModelData, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var modelData entity.ModelData
+	// 注意，这里我们假设carName已经包含了.gltf扩展名
+	err := r.DB.Collection("modelData").FindOne(ctx, bson.M{"modelName": carName}).Decode(&modelData)
+	if err != nil {
+		return nil, err
+	}
+
+	return &modelData, nil
 }
