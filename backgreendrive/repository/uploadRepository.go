@@ -1,11 +1,14 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/gridfs"
@@ -84,5 +87,49 @@ func (r *UploadRepository) DeleteFsFileById(fileId primitive.ObjectID) error {
 	}
 
 	fmt.Printf("File with ID %s deleted successfully.\n", fileId.Hex())
+	return nil
+}
+
+// 用于开发测试环境/car/upload/deleteAll
+func (r *UploadRepository) DeleteAllFsFiles() error {
+	// 创建一个新的 GridFS bucket
+	bucket, err := gridfs.NewBucket(r.DB)
+	if err != nil {
+		return err
+	}
+
+	// 查找fs.files集合中的所有记录
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cursor, err := r.DB.Collection("fs.files").Find(ctx, bson.D{{}})
+	if err != nil {
+		return err
+	}
+	defer cursor.Close(ctx)
+
+	// 遍历所有记录
+	for cursor.Next(ctx) {
+		var fileDoc bson.M
+		if err := cursor.Decode(&fileDoc); err != nil {
+			return err
+		}
+
+		// 从记录中获取文件的_id
+		fileId, ok := fileDoc["_id"].(primitive.ObjectID)
+		if !ok {
+			return fmt.Errorf("invalid file id format")
+		}
+
+		// 删除文件
+		if err := bucket.Delete(fileId); err != nil {
+			return err
+		}
+		fmt.Printf("File with ID %s deleted successfully.\n", fileId.Hex())
+	}
+
+	if err := cursor.Err(); err != nil {
+		return err
+	}
+
 	return nil
 }

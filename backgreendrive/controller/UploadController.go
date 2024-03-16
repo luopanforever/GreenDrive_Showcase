@@ -2,34 +2,44 @@ package controller
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/luopanforever/backgreendrive/repository"
 	"github.com/luopanforever/backgreendrive/response"
 	"github.com/luopanforever/backgreendrive/service"
 )
 
 type UploadController struct {
-	uploadService *service.UploadService
+	uploadService   *service.UploadService
+	modelRepository *repository.ModelRepository
+	nameService     *service.NameService
 }
 
-func NewUploadController(uploadService *service.UploadService) *UploadController {
-	return &UploadController{uploadService: uploadService}
+func NewUploadController() *UploadController {
+	uploadService := service.NewUploadService()
+	modelRepository := repository.GetModelRepository()
+	nameSErvice := service.NewNameService()
+	return &UploadController{
+		uploadService:   uploadService,
+		modelRepository: modelRepository,
+		nameService:     nameSErvice,
+	}
 }
 
 func (ctrl *UploadController) UploadZips(c *gin.Context) {
-
 	carId := c.Param("carId")
 
-	// 使用 MultipartForm 方法来处理多个文件
 	form, err := c.MultipartForm()
 	if err != nil {
 		response.Fail(c, "Failed to parse multipart form", gin.H{"error": err.Error()})
 		return
 	}
 
-	files := form.File["file[]"] // 注意：前端需要将文件字段命名为 file[] 以支持多文件
+	files := form.File["file[]"] // 前端需要将文件字段命名为 file[] 以支持多文件
 
 	for _, file := range files {
 		// 对每个文件重复保存和解压缩的过程
@@ -44,13 +54,95 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 			response.Fail(c, "Failed to unzip files", gin.H{"error": err.Error()})
 			return
 		}
-		carId, err = incrementNumberSuffix(carId)
+		unzipDir = unzipDir + "/"
+		// 处理scene.gltf文件
+		// 遍历解压目录并上传其他文件
+		gltfUploaded := false
+		gltfPath := filepath.Join(unzipDir, "scene.gltf")
+
+		if _, err := os.Stat(gltfPath); !os.IsNotExist(err) {
+			fileId, err := ctrl.uploadService.UploadFsFileChunkModel(unzipDir, "scene.gltf", carId)
+			if err != nil {
+				response.Fail(c, "Failed to upload GLTF file", gin.H{"error": err.Error()})
+				return
+			}
+			gltfUploaded = true
+
+			// 创建modeldata记录
+			err = ctrl.modelRepository.CreateModelData(carId, fileId)
+			if err != nil {
+				response.Fail(c, "Failed to create model data", gin.H{"error": err.Error()})
+				return
+			}
+
+			// 在carname的数组中添加carid
+			err = ctrl.nameService.Repo.AddCarName(carId)
+			if err != nil {
+				response.Fail(c, "Failed to add carid data", gin.H{"error": err.Error()})
+				return
+			}
+		}
+
+		err = filepath.Walk(unzipDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			// 获取文件相对于解压目录的相对路径
+			relativePath, err := filepath.Rel(unzipDir, path)
+			if err != nil {
+				return err
+			}
+
+			// 忽略不需要上传的文件和目录
+			if relativePath == "." || strings.Contains(relativePath, "__MACOSX") || strings.Contains(relativePath, ".DS_Store") {
+				return nil
+			}
+
+			// 忽略license.txt文件
+			if relativePath == "license.txt" {
+				return nil
+			}
+
+			// 特殊处理scene.gltf文件，确保只上传一次
+			if relativePath == "scene.gltf" {
+				if gltfUploaded {
+					return nil // 如果scene.gltf已经上传过，跳过
+				}
+				gltfUploaded = true // 标记scene.gltf为已上传
+			}
+
+			if info.IsDir() {
+				return nil // 忽略目录本身，但不忽略其内容
+			}
+
+			// 上传文件，并获取上传后的文件ID
+			fileId, err := ctrl.uploadService.UploadFsFileChunkModel(unzipDir, relativePath, carId)
+			if err != nil {
+				return fmt.Errorf("Failed to upload file '%s': %v", relativePath, err)
+			}
+			fmt.Println("上传文件名为:", relativePath)
+			fmt.Println("fs.files的_id为:", fileId.Hex())
+
+			// 添加资源到modeldata文档
+			err = ctrl.modelRepository.AddResourceToModel(carId+".gltf", relativePath, fileId)
+			if err != nil {
+				return fmt.Errorf("Failed to add resource to model for file '%s': %v", relativePath, err)
+			}
+
+			return nil
+		})
+
 		if err != nil {
-			response.Fail(c, "Failed to increacement Number", gin.H{"error": err.Error()})
+			response.Fail(c, "Failed to process unzipped files", gin.H{"error": err.Error()})
 			return
 		}
-		// 处理存放在数据库中
-		println(unzipDir)
+
+		carId, err = incrementNumberSuffix(carId)
+		if err != nil {
+			response.Fail(c, "Failed to increce carId", gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	response.Success(c, nil, "All files uploaded and extracted successfully")
@@ -86,6 +178,16 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 
 // 	response.Success(c, gin.H{"message": "All files uploaded successfully"}, "upload success")
 // }
+
+func (ctrl *UploadController) DeleteAllFiles(c *gin.Context) {
+	err := ctrl.uploadService.DeleteAllFiles()
+	if err != nil {
+		response.Fail(c, "Failed to delete all files", gin.H{"error": err.Error()})
+		return
+	}
+
+	response.Success(c, nil, "All files deleted successfully")
+}
 
 func incrementNumberSuffix(str string) (string, error) {
 	// 找到字符串中第一个数字的位置

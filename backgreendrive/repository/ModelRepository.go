@@ -141,7 +141,7 @@ func (r *ModelRepository) CreateModelData(modelName string, modelFileId primitiv
 	defer cancel()
 
 	newModelData := bson.M{
-		"modelName":   modelName,
+		"modelName":   modelName + ".gltf",
 		"modelFileId": modelFileId,
 		"resources":   []bson.M{}, // 初始化为空的数组
 	}

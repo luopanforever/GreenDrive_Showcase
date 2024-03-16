@@ -8,12 +8,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/luopanforever/backgreendrive/repository"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UploadService struct{}
+type UploadService struct {
+	UploadRepo *repository.UploadRepository
+}
 
 func NewUploadService() *UploadService {
-	return &UploadService{}
+	uplodaRepo := repository.GetUploadRepository()
+	return &UploadService{UploadRepo: uplodaRepo}
 }
 
 // SaveZipFile 保存上传的ZIP文件
@@ -106,4 +112,13 @@ func (s *UploadService) UnzipFiles(zipFilePath, carId string) (string, error) {
 	}
 
 	return unzipDir, nil
+}
+func (s *UploadService) UploadFsFileChunkModel(filePath, fileName, carId string) (primitive.ObjectID, error) {
+	return_id, err := s.UploadRepo.UploadFsFileChunkModel(filePath, fileName, carId)
+	return return_id, err
+}
+
+func (s *UploadService) DeleteAllFiles() error {
+	err := s.UploadRepo.DeleteAllFsFiles()
+	return err
 }

@@ -27,7 +27,7 @@ func main() {
 	r = CollectRoute(r)
 
 	// 测试用
-	// test.Test_delete_file_chunk_byId()
+	// test.TestRun()
 
 	r.Run() // 默认在0.0.0.0:8080启动服务
 }

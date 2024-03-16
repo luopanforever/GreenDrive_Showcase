@@ -19,8 +19,8 @@ func Test_add_file_chunk() {
 	}
 	fmt.Printf("_id:%s\n", objid)
 }
-func Test_delete_file_chunk_byId() {
-	fileIdStr := "65f4316ddad6082e066940f1"
+func Test_delete_file_chunk_byId(fileidstr string) {
+	fileIdStr := fileidstr
 	fileId, err := primitive.ObjectIDFromHex(fileIdStr)
 	if err != nil {
 		log.Fatalf("Invalid file ID: %v", err)
@@ -29,4 +29,12 @@ func Test_delete_file_chunk_byId() {
 	if err != nil {
 		log.Fatalf("Failed to delete file: %v", err)
 	}
+}
+
+func TestRun() {
+	Test_delete_file_chunk_byId("65f44c0ff14c843bb46defe0")
+	Test_delete_file_chunk_byId("65f44c0ff14c843bb46defe3")
+	Test_delete_file_chunk_byId("65f44c0ff14c843bb46defe5")
+	Test_delete_file_chunk_byId("65f44c0ff14c843bb46defe7")
+
 }
