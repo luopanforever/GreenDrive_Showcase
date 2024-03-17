@@ -22,3 +22,9 @@ func (service *NameService) GetNameList() ([]string, error) {
 func (s *NameService) RemoveCarName(name string) error {
 	return s.Repo.RemoveCarName(name)
 }
+
+// CarNameExists checks if the given car name already exists in the carNames array.
+func (s *NameService) CarNameExists(carName string) (bool, error) {
+	// 调用NameRepository中的方法来检查carName是否存在
+	return s.Repo.CarNameExists(carName)
+}

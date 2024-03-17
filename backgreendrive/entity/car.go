@@ -26,3 +26,7 @@ type ModelData struct {
 	ModelFileId primitive.ObjectID `bson:"modelFileId"`
 	Resources   []ResourceInfo     `bson:"resources"`
 }
+
+type CarNames struct {
+	UsedNames []string `bson:"usedNames"`
+}

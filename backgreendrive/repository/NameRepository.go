@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/luopanforever/backgreendrive/entity"
 	"github.com/luopanforever/backgreendrive/response"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -124,4 +125,23 @@ func (r *NameRepository) RemoveCarName(name string) error {
 	update := bson.M{"$pull": bson.M{"usedNames": name}}
 	_, err := r.DB.Collection("carNames").UpdateOne(ctx, bson.M{}, update)
 	return err
+}
+
+// CarNameExists checks if the given car name already exists in the carNames array.
+func (r *NameRepository) CarNameExists(carName string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var carNames entity.CarNames
+	err := r.DB.Collection("carNames").FindOne(ctx, bson.D{}).Decode(&carNames)
+	if err != nil {
+		return false, err
+	}
+
+	for _, name := range carNames.UsedNames {
+		if name == carName {
+			return true, nil
+		}
+	}
+	return false, nil
 }

@@ -49,7 +49,18 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 	carId := c.Param("carId")
 
 	// 开局检查carnames里面有没有1
+	exists, err := ctrl.nameService.CarNameExists(carId)
+	if err != nil {
+		response.Fail(c, "Failed to check car name existence", gin.H{"error": err.Error()})
+		return
+	}
 
+	if exists {
+		response.Fail(c, "Car name already exists", gin.H{"error": fmt.Errorf("car name '%s' has already been used", carId).Error()})
+		return
+	}
+
+	// 开始获取资源
 	form, err := c.MultipartForm()
 	if err != nil {
 		response.Fail(c, "Failed to parse multipart form", gin.H{"error": err.Error()})
