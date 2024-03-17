@@ -166,7 +166,7 @@ func (ctrl *UploadController) DeleteCar(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, nil, "Car and all related resources deleted successfully")
+	response.Success(c, gin.H{"delete carname": carName}, "Car and all related resources deleted successfully")
 }
 
 func incrementNumberSuffix(str string) (string, error) {
