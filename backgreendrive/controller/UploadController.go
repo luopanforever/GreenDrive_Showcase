@@ -8,25 +8,24 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/luopanforever/backgreendrive/repository"
 	"github.com/luopanforever/backgreendrive/response"
 	"github.com/luopanforever/backgreendrive/service"
 )
 
 type UploadController struct {
-	uploadService   *service.UploadService
-	modelRepository *repository.ModelRepository
-	nameService     *service.NameService
+	uploadService *service.UploadService
+	modelService  *service.ModelService
+	nameService   *service.NameService
 }
 
 func NewUploadController() *UploadController {
 	uploadService := service.NewUploadService()
-	modelRepository := repository.GetModelRepository()
+	modelService := service.NewModelService()
 	nameSErvice := service.NewNameService()
 	return &UploadController{
-		uploadService:   uploadService,
-		modelRepository: modelRepository,
-		nameService:     nameSErvice,
+		uploadService: uploadService,
+		modelService:  modelService,
+		nameService:   nameSErvice,
 	}
 }
 
@@ -69,7 +68,7 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 			gltfUploaded = true
 
 			// 创建modeldata记录
-			err = ctrl.modelRepository.CreateModelData(carId, fileId)
+			err = ctrl.modelService.CreateModelData(carId, fileId)
 			if err != nil {
 				response.Fail(c, "Failed to create model data", gin.H{"error": err.Error()})
 				return
@@ -119,15 +118,15 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 			// 上传文件，并获取上传后的文件ID
 			fileId, err := ctrl.uploadService.UploadFsFileChunkModel(unzipDir, relativePath, carId)
 			if err != nil {
-				return fmt.Errorf("Failed to upload file '%s': %v", relativePath, err)
+				return fmt.Errorf("failed to upload file '%s': %v", relativePath, err)
 			}
 			fmt.Println("上传文件名为:", relativePath)
 			fmt.Println("fs.files的_id为:", fileId.Hex())
 
 			// 添加资源到modeldata文档
-			err = ctrl.modelRepository.AddResourceToModel(carId+".gltf", relativePath, fileId)
+			err = ctrl.modelService.AddResourceToModel(carId+".gltf", relativePath, fileId)
 			if err != nil {
-				return fmt.Errorf("Failed to add resource to model for file '%s': %v", relativePath, err)
+				return fmt.Errorf("failed to add resource to model for file '%s': %v", relativePath, err)
 			}
 
 			return nil
@@ -193,7 +192,7 @@ func (ctrl *UploadController) DeleteCar(c *gin.Context) {
 	carName := c.Param("carName") + ".gltf"
 
 	// 获取汽车资源的modelData
-	modelData, err := ctrl.modelRepository.FindModelDataByCarName(carName)
+	modelData, err := ctrl.modelService.FindModelDataByCarName(carName)
 	if err != nil {
 		response.Fail(c, "Failed to find car model data", gin.H{"error": err.Error()})
 		return
@@ -206,7 +205,7 @@ func (ctrl *UploadController) DeleteCar(c *gin.Context) {
 	}
 
 	// 删除modelData记录
-	if err := ctrl.modelRepository.DeleteModelData(carName); err != nil {
+	if err := ctrl.modelService.DeleteModelData(carName); err != nil {
 		response.Fail(c, "Failed to delete car model data", gin.H{"error": err.Error()})
 		return
 	}
