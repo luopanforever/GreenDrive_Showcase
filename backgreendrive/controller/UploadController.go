@@ -39,7 +39,6 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 		response.Fail(c, "Failed to clear /tmp/car/zip/ directory", gin.H{"error": err.Error()})
 		return
 	}
-
 	err = clearDirectory(unzipDirBase)
 	if err != nil {
 		response.Fail(c, "Failed to clear /tmp/car/unzipped/ directory", gin.H{"error": err.Error()})
@@ -48,7 +47,7 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 
 	carId := c.Param("carId")
 
-	// 开局检查carnames里面有没有1
+	// 开局检查carnames里面有没有carId
 	exists, err := ctrl.nameService.CarNameExists(carId)
 	if err != nil {
 		response.Fail(c, "Failed to check car name existence", gin.H{"error": err.Error()})
