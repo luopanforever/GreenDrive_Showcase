@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -156,4 +157,67 @@ func (r *UploadRepository) DeleteAllFsFiles() error {
 	}
 
 	return nil
+}
+
+func (r *UploadRepository) ProcessUploadsAndResources(unzipDir, carId string, modelRepository *ModelRepository, NameRepository *NameRepository) error {
+	unzipDir = unzipDir + "/"
+	println("unzipDir: ", unzipDir)
+	gltfPath := filepath.Join(unzipDir, "scene.gltf")
+	println("gltfPath: ", gltfPath)
+	var fileId primitive.ObjectID
+
+	if _, err := os.Stat(gltfPath); !os.IsNotExist(err) {
+		fileId, err = r.UploadFsFileChunkModel(unzipDir, "scene.gltf", carId)
+		if err != nil {
+			return err
+		}
+
+		// 创建modeldata记录
+		err = modelRepository.CreateModelData(carId, fileId)
+		if err != nil {
+			return err
+		}
+
+		// 在carNames中添加carId
+		err = NameRepository.AddCarName(carId)
+		if err != nil {
+			return err
+		}
+	}
+
+	return filepath.Walk(unzipDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		relativePath, err := filepath.Rel(unzipDir, path)
+		if err != nil {
+			return err
+		}
+
+		// 忽略不需要上传的文件和目录
+		if relativePath == "." || strings.Contains(relativePath, "__MACOSX") || strings.Contains(relativePath, ".DS_Store") {
+			return nil
+		}
+
+		// 忽略license.txt文件
+		if relativePath == "license.txt" {
+			return nil
+		}
+
+		if info.IsDir() {
+			return nil // 忽略目录本身，但不忽略其内容
+		}
+		if relativePath != "scene.gltf" {
+			fileId, err := r.UploadFsFileChunkModel(unzipDir, relativePath, carId)
+			if err != nil {
+				return err
+			}
+
+			// 添加资源到modelData
+			return modelRepository.AddResourceToModel(carId+".gltf", relativePath, fileId)
+		}
+
+		return nil
+	})
 }

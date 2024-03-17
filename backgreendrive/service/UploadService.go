@@ -127,3 +127,9 @@ func (s *UploadService) DeleteAllFiles() error {
 func (s *UploadService) DeleteCarResources(modelData entity.ModelData) error {
 	return s.UploadRepo.DeleteCarResources(modelData)
 }
+
+func (s *UploadService) ProcessUploadsAndResources(unzipDir, carId string, modelService *ModelService, nameService *NameService) error {
+	modelRepository := modelService.Repo
+	nameRepository := nameService.Repo
+	return s.UploadRepo.ProcessUploadsAndResources(unzipDir, carId, modelRepository, nameRepository)
+}
