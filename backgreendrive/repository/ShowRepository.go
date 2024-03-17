@@ -69,40 +69,44 @@ func (r *ShowRepository) FindCarModelByCarNameAndAction(carName, fileName string
 	if err != nil {
 		return entity.CarMetadata{}, nil, err
 	}
-	println("modeldata:")
-	println("modelname:", modelData.ModelName)
-	println("modelfileid:", modelData.ModelFileId.String())
-	println("")
-	println("开始要查找的resource文件是否存在:", fileName)
+	// println("modeldata:")
+	// println("modelname:", modelData.ModelName)
+	// println("modelfileid:", modelData.ModelFileId.String())
+	// println("")
+	// println("开始要查找的resource文件是否存在:", fileName)
 	var fileId primitive.ObjectID
 	if strings.HasSuffix(fileName, ".gltf") {
-		fileId = modelData.ModelFileId
-		println("匹配到了是.gltf文件")
+		if modelData.ModelName == fileName {
+			fileId = modelData.ModelFileId
+			// println("匹配到了是.gltf文件")
+		} else {
+			return entity.CarMetadata{}, nil, err
+		}
 	} else {
-		println("不是.gltf文件,开始遍历每一个resource文件名")
+		// println("不是.gltf文件,开始遍历每一个resource文件名")
 		for _, resource := range modelData.Resources {
 			println("resource name: ", resource.Name)
 			if resource.Name == fileName {
 				fileId = resource.FileId
-				println("匹配到了是resource文件,文件名为: ", resource.Name)
+				// println("匹配到了是resource文件,文件名为: ", resource.Name)
 				break
 			}
 		}
 
 	}
-	println("开始获取要查找资源的元信息")
+	// println("开始获取要查找资源的元信息")
 	var carMeta entity.CarMetadata
 	err = r.DB.Collection("fs.files").FindOne(ctx, bson.M{"_id": fileId}).Decode(&carMeta)
 	if err != nil {
 		return entity.CarMetadata{}, nil, err
 	}
-	println("获取完毕")
-	println("开始用gridfs传输资源")
+	// println("获取完毕")
+	// println("开始用gridfs传输资源")
 	dStream, err := bucket.OpenDownloadStream(fileId)
 	if err != nil {
 		return entity.CarMetadata{}, nil, err
 	}
-	println("传输完毕")
+	// println("传输完毕")
 	return carMeta, dStream, nil
 }
 
