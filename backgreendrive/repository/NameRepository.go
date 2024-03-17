@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -22,7 +23,38 @@ func newNameRepository() *NameRepository {
 }
 
 func GetNameRepository() *NameRepository {
-	return newNameRepository()
+	nameRepository := newNameRepository()
+	// 查询carName集合是否存在，如果存在则不管，如果不存在则添加集合并创建文档
+
+	// 查询carNames集合是否存在
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// 获取数据库中所有集合的名称
+	collectionNames, err := nameRepository.DB.ListCollectionNames(ctx, bson.D{})
+	if err != nil {
+		log.Fatalf("Failed to list collection names: %v", err)
+	}
+
+	// 检查carNames集合是否已存在
+	collectionExists := false
+	for _, name := range collectionNames {
+		if name == "carNames" {
+			collectionExists = true
+			break
+		}
+	}
+
+	// 如果carNames集合不存在，则创建集合并添加初始文档
+	if !collectionExists {
+		_, err := nameRepository.DB.Collection("carNames").InsertOne(ctx, bson.M{
+			"usedNames": []string{},
+		})
+		if err != nil {
+			log.Fatalf("Failed to create initial carNames document: %v", err)
+		}
+	}
+	return nameRepository
 }
 
 func (r *NameRepository) FindAvailableName() (string, error) {
