@@ -186,3 +186,18 @@ func (r *ModelRepository) FindModelDataByCarName(carName string) (*entity.ModelD
 
 	return &modelData, nil
 }
+
+// 没有返回错误值
+func (r *ModelRepository) GetIdListByModelData(modelData entity.ModelData) []primitive.ObjectID {
+	idList := make([]primitive.ObjectID, 0)
+
+	// Add the ModelFileId first
+	idList = append(idList, modelData.ModelFileId)
+
+	// Then add all resource FileIds
+	for _, resource := range modelData.Resources {
+		idList = append(idList, resource.FileId)
+	}
+
+	return idList
+}

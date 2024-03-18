@@ -16,9 +16,13 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	uploadController := controller.NewUploadController()
 	r.POST("/car/upload/:carId", uploadController.UploadZips)
 	// 删除汽车所有资源
-	r.DELETE("car/upload/delete/:carName", uploadController.DeleteCar)
+	r.DELETE("/car/upload/delete/:carName", uploadController.DeleteCar)
 	// 无脑删除所有filechunks资源
 	// r.DELETE("/car/upload/deleteAll", uploadController.DeleteAllFiles)
+
+	// 下载汽车
+	downloadController := controller.NewDownloadController()
+	r.GET("/car/download/:carName", downloadController.DownloadModel)
 
 	// 汽车名字管理
 	nameController := controller.NewNameController()
