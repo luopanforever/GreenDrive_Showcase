@@ -67,6 +67,11 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 	}
 
 	files := form.File["file[]"]
+	if len(files) == 0 { // 检查是否有上传的文件
+		response.Fail(c, "No files uploaded", gin.H{"error": "form is empty"})
+		return
+	}
+
 	fileName := make([]string, 0)
 	for _, file := range files {
 		fileName = append(fileName, file.Filename)
