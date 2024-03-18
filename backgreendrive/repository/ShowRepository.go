@@ -57,14 +57,14 @@ func (r *ShowRepository) FindCarModelByID(id primitive.ObjectID) (entity.CarMeta
 func (r *ShowRepository) FindCarModelByCarNameAndAction(carName, fileName string) (entity.CarMetadata, io.Reader, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	println("进入repository中")
+	// println("进入repository中")
 	bucket, err := gridfs.NewBucket(r.DB)
 	if err != nil {
 		return entity.CarMetadata{}, nil, err
 	}
 	var modelData entity.ModelData
 
-	println("准备获取modeldata数据")
+	// println("准备获取modeldata数据")
 	err = r.DB.Collection("modelData").FindOne(ctx, bson.M{"modelName": carName + ".gltf"}).Decode(&modelData)
 	if err != nil {
 		return entity.CarMetadata{}, nil, err
@@ -85,7 +85,7 @@ func (r *ShowRepository) FindCarModelByCarNameAndAction(carName, fileName string
 	} else {
 		// println("不是.gltf文件,开始遍历每一个resource文件名")
 		for _, resource := range modelData.Resources {
-			println("resource name: ", resource.Name)
+			// println("resource name: ", resource.Name)
 			if resource.Name == fileName {
 				fileId = resource.FileId
 				// println("匹配到了是resource文件,文件名为: ", resource.Name)
