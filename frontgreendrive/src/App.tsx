@@ -24,16 +24,10 @@ const App: React.FC = () => {
     axios.get<CarList>("/car/names/list").then((res) => {
       setCarList(res.data.data.names)
     })
-    // 获取有效可用汽⻋名字
+    /* // 获取有效可用汽⻋名字
     axios.get<CarAvaliable>("/car/names/available").then((res) => {
       console.log("有效汽车名", res.data.data.availableName)
-    })
-  }, [])
-
-  useEffect(() => {
-    axios.get("car/show/car1/car1.gltf").then((res) => {
-      console.log(res.data)
-    })
+    }) */
   }, [])
 
   // todo 上传
@@ -63,12 +57,16 @@ const App: React.FC = () => {
 
   // 选择切换汽车
   const [selectOpen, setSelectOpen] = useState<boolean>(false)
-  const handleSelectChange = (value: string) => {
-    // todo请求切换
-    axios.get("http://localhost:8080/car/show/car1/car1.gltf")
+  const handleSelectChange = async (value: string) => {
     setSelectedCar(value)
     setSelectOpen(false)
   }
+ /*  useEffect(() => {
+    axios.get(`/car/show/${selectedCar}/${selectedCar}.gltf`).then((res) => {
+      // setShowCar(res.data)
+    })
+  }, [selectedCar]) */
+
   return (
     <>
       <section
@@ -108,7 +106,7 @@ const App: React.FC = () => {
       </section>
 
       <section>
-        <ShowModel style={{ width: 600, height: 600 }} url={showCar} />
+        <ShowModel style={{ width: 600, height: 600 }} url={`/car/show/${selectedCar}/${selectedCar}.gltf`} />
       </section>
 
       {/* <ShowModel style={{width:600,height:600}} url='https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf'/> */}
