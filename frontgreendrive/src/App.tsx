@@ -123,24 +123,26 @@ const App: React.FC = () => {
         </div>
 
         <Space wrap>
-          <Select
-            style={{ width: 120 }}
-            value={selectedCar}
-            open={selectOpen}
-            onDropdownVisibleChange={(visible) => setSelectOpen(visible)}
-            dropdownRender={() => (
-              <Menu>
-                {carList.map((item) => (
-                  <Menu.Item
-                    key={item}
-                    onClick={() => handleSelectChange(item)}
-                  >
-                    {item}
-                  </Menu.Item>
-                ))}
-              </Menu>
-            )}
-          />
+          {carList.length && (
+            <Select
+              style={{ width: 120 }}
+              value={selectedCar}
+              open={selectOpen}
+              onDropdownVisibleChange={(visible) => setSelectOpen(visible)}
+              dropdownRender={() => (
+                <Menu>
+                  {carList.map((item) => (
+                    <Menu.Item
+                      key={item}
+                      onClick={() => handleSelectChange(item)}
+                    >
+                      {item}
+                    </Menu.Item>
+                  ))}
+                </Menu>
+              )}
+            />
+          )}
         </Space>
       </section>
 
