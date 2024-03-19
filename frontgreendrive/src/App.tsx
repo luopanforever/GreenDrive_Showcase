@@ -14,6 +14,13 @@ type Response<T extends Record<string, any>> = {
 interface CarList extends Response<{ names: string[] }> {}
 interface CarAvailable extends Response<{ availableName: string }> {}
 
+/* interface CarList {
+  names: string[]
+}
+interface CarAvailable {
+  availableName: string
+} */
+
 const App: React.FC = () => {
   // 所选择的上传文件
   const [selectedUploadFiles, setSelectedUploadFiles] = useState<RcFile[]>([])
