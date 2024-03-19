@@ -27,7 +27,7 @@ const App: React.FC = () => {
   // 有效的汽车列表
   const [carList, setCarList] = useState<string[]>(["undefined"]) //undefined初始化占个位
   // 选择框选择的汽车
-  const [selectedCar, setSelectedCar] = useState<string>("car1")
+  const [selectedCar, setSelectedCar] = useState<string>("")
   // 汽车有效名
   const [carAvailableName, setCarAvailableName] = useState("")
   // 触发Effect更新
@@ -77,16 +77,21 @@ const App: React.FC = () => {
       formData.append("file[]", file, file.name)
     })
     // 使用 axios 发送 formData
-    Request.post(`/upload/${carAvailableName}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    })
-      .then((response) => {
+    Request.post<{ carNames: string[] }>(
+      `/upload/${carAvailableName}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
+      .then((res) => {
         // 处理成功响应
         message.success("上传成功！")
         // 上传成功后清空已选文件列表
         setSelectedUploadFiles([])
+        setSelectedCar(res.data.carNames[0])
       })
       .catch((error) => {
         // 处理错误
@@ -136,7 +141,7 @@ const App: React.FC = () => {
         </div>
 
         <Space wrap>
-          {carList.length && (
+          {!!carList.length && (
             <Select
               style={{ width: 120 }}
               value={selectedCar}
