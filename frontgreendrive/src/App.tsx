@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from "react"
-import axios from "axios"
 import { Button, Upload, message, Select, Space, Menu } from "antd"
 import type { UploadProps } from "antd"
 import { UploadOutlined } from "@ant-design/icons"
 import ShowModel from "./ShowModel"
 import { RcFile } from "antd/es/upload"
-
-type Response<T extends Record<string, any>> = {
+import Request from "./api"
+/* type Response<T extends Record<string, any>> = {
   code: number
   data: T
   msg: string
 }
 interface CarList extends Response<{ names: string[] }> {}
-interface CarAvailable extends Response<{ availableName: string }> {}
+interface CarAvailable extends Response<{ availableName: string }> {} */
 
-/* interface CarList {
+interface CarList {
   names: string[]
 }
 interface CarAvailable {
   availableName: string
-} */
+}
 
 const App: React.FC = () => {
   // 所选择的上传文件
@@ -32,17 +31,18 @@ const App: React.FC = () => {
   const [carAvailableName, setCarAvailableName] = useState("")
   useEffect(() => {
     // 获取汽车列表
-    axios.get<CarList>("/car/names/list").then((res) => {
-      setCarList(res.data.data.names)
+
+    Request.get<CarList>("/names/list").then((res) => {
+      setCarList(res.data.names)
     })
+
     // 获取有效可用汽⻋名字
-    axios.get<CarAvailable>("/car/names/available").then((res) => {
-      setCarAvailableName(res.data.data.availableName)
+    Request.get<CarAvailable>("/names/available").then((res) => {
+      setCarAvailableName(res.data.availableName)
     })
   }, [selectedUploadFiles])
 
   const props: UploadProps = {
-    // action: `/car/upload/${carAvailableName}}`,
     fileList: selectedUploadFiles,
     beforeUpload(file) {
       const isZip = file.type === "application/zip"
@@ -75,12 +75,11 @@ const App: React.FC = () => {
       formData.append("file[]", file, file.name)
     })
     // 使用 axios 发送 formData
-    axios
-      .post(`/car/upload/${carAvailableName}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+    Request.post(`/upload/${carAvailableName}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
       .then((response) => {
         // 处理成功响应
         message.success("上传成功！")
@@ -99,11 +98,6 @@ const App: React.FC = () => {
     setSelectedCar(value)
     setSelectOpen(false)
   }
-  /*  useEffect(() => {
-    axios.get(`/car/show/${selectedCar}/${selectedCar}.gltf`).then((res) => {
-      // setShowCar(res.data)
-    })
-  }, [selectedCar]) */
 
   return (
     <>
@@ -138,14 +132,15 @@ const App: React.FC = () => {
               onDropdownVisibleChange={(visible) => setSelectOpen(visible)}
               dropdownRender={() => (
                 <Menu>
-                  {carList.map((item) => (
-                    <Menu.Item
-                      key={item}
-                      onClick={() => handleSelectChange(item)}
-                    >
-                      {item}
-                    </Menu.Item>
-                  ))}
+                  {carList.length &&
+                    carList.map((item) => (
+                      <Menu.Item
+                        key={item}
+                        onClick={() => handleSelectChange(item)}
+                      >
+                        {item}
+                      </Menu.Item>
+                    ))}
                 </Menu>
               )}
             />
