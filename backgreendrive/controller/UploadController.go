@@ -73,8 +73,10 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 	}
 
 	fileName := make([]string, 0)
+	carNames := make([]string, 0)
 	for _, file := range files {
 		fileName = append(fileName, file.Filename)
+		carNames = append(carNames, carId)
 		zipFilePath, err := ctrl.uploadService.SaveZipFile(file, carId)
 		if err != nil {
 			response.Fail(c, "Failed to save zip file", gin.H{"error": err.Error()})
@@ -100,7 +102,7 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 		}
 	}
 
-	response.Success(c, gin.H{"add zips": fileName}, "All files uploaded and resources processed successfully")
+	response.Success(c, gin.H{"add zips": fileName, "carNames": carNames}, "All files uploaded and resources processed successfully")
 }
 
 // func UploadController_(c *gin.Context) {
