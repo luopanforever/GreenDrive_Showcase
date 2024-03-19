@@ -11,23 +11,20 @@ import (
 var mongoDB *mongo.Client
 
 func InItDB() *mongo.Client {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	// 使用云mongodb
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI("mongodb+srv://luopan:luopan@tdcars.spuljs2.mongodb.net/?retryWrites=true&w=majority&appName=tdCars").SetServerAPIOptions(serverAPI)
+	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	// defer cancel()
-
-	// err = client.Connect(ctx)
+	// 使用本地mongodb
+	// client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
-	// // Ping the primary
-	// if err := client.Ping(ctx, nil); err != nil {
-	// 	log.Fatal(err)
-	// }
 	print("连接成功\n")
 	mongoDB = client
 	return client
