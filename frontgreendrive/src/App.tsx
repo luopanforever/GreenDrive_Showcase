@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react"
-import { Button, Upload, message, Select, Space, Menu } from "antd"
+import { Button, Upload, message, Select, Space, Menu, Popconfirm } from "antd"
 import type { UploadProps } from "antd"
-import { UploadOutlined } from "@ant-design/icons"
+import { UploadOutlined, CloseCircleOutlined } from "@ant-design/icons"
 import ShowModel from "./ShowModel"
 import { RcFile } from "antd/es/upload"
 import Request from "./api"
+import { css } from "@emotion/css"
 /* type Response<T extends Record<string, any>> = {
   code: number
   data: T
@@ -27,11 +28,12 @@ const App: React.FC = () => {
   const [carList, setCarList] = useState<string[]>(["undefined"]) //undefined初始化占个位
   // 选择框选择的汽车
   const [selectedCar, setSelectedCar] = useState<string>("car1")
-
+  // 汽车有效名
   const [carAvailableName, setCarAvailableName] = useState("")
+  // 触发Effect更新
+  const [triggerEffect, setTriggerEffect] = useState(false)
   useEffect(() => {
     // 获取汽车列表
-
     Request.get<CarList>("/names/list").then((res) => {
       setCarList(res.data.names)
     })
@@ -40,7 +42,7 @@ const App: React.FC = () => {
     Request.get<CarAvailable>("/names/available").then((res) => {
       setCarAvailableName(res.data.availableName)
     })
-  }, [selectedUploadFiles])
+  }, [selectedUploadFiles, triggerEffect])
 
   const props: UploadProps = {
     fileList: selectedUploadFiles,
@@ -99,6 +101,13 @@ const App: React.FC = () => {
     setSelectOpen(false)
   }
 
+  // 删除汽车
+  const handleConfirmDelete = (carName: string) => {
+    Request.delete<any>(`/upload/delete/${carName}`).then((res) => {
+      message.success(res.msg)
+      setTriggerEffect((prev) => !prev)
+    })
+  }
   return (
     <>
       <section
@@ -117,7 +126,10 @@ const App: React.FC = () => {
             type='primary'
             onClick={handleUpload}
             disabled={!selectedUploadFiles.length}
-            style={{ marginTop: 16 }}
+            className={css`
+              margin-top: 16px;
+              visibility: ${selectedUploadFiles.length ? "visible" : "hidden"};
+            `}
           >
             开始上传
           </Button>
@@ -138,7 +150,30 @@ const App: React.FC = () => {
                         key={item}
                         onClick={() => handleSelectChange(item)}
                       >
-                        {item}
+                        <div
+                          className={css`
+                            display: flex;
+                            justify-content: space-between;
+                          `}
+                        >
+                          <span>{item}</span>
+
+                          <Popconfirm
+                            // onCancel={cancel}
+                            title={`确定删除这个${item}模型?`}
+                            okText='确定'
+                            cancelText='取消'
+                            onConfirm={() => handleConfirmDelete(item)}
+                          >
+                            <CloseCircleOutlined
+                              className={css`
+                                &:hover {
+                                  color: red;
+                                }
+                              `}
+                            />
+                          </Popconfirm>
+                        </div>
                       </Menu.Item>
                     ))}
                 </Menu>
