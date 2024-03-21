@@ -30,51 +30,48 @@ func NewDownloadService() *DownloadService {
 	}
 }
 
-func (s *DownloadService) DownloadModelAndResources(carName string) (string, error) {
+func (s *DownloadService) DownloadModelAndResources(carName, format string) (string, error) {
 	modelData, err := s.ModelRepo.FindModelDataByCarName(carName + ".gltf")
 	if err != nil {
 		return "", err
 	}
 
-	// 清除alioss上objectname为carname的zip文件
-	err = s.AO.DeleteAliOss(carName)
-	if err != nil {
-		return "", err
-	}
-
-	// 创建临时目录用于保存文件
+	// 创建临时目录并保存文件
 	tempDir := filepath.Join("/tmp/car/download", carName)
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		return "", err
 	}
-
-	// 从GridFS下载文件并保存到临时目录
 	idList := s.ModelRepo.GetIdListByModelData(*modelData)
 	err = s.saveFilesToTempDir(idList, tempDir)
 	if err != nil {
 		return "", err
 	}
 
-	// 将临时目录中的文件添加到zip文件中
-	zipFilePath := filepath.Join("/tmp/car/download", fmt.Sprintf("%s.zip", carName))
-	err = s.createZipFromTempDir(tempDir, zipFilePath)
-	if err != nil {
-		return "", err
+	if format == "gltf" {
+		// 对于gltf格式，直接打包临时目录为zip并返回路径
+		zipFilePath := filepath.Join("/tmp/car/download", fmt.Sprintf("%s.zip", carName))
+		err = s.createZipFromTempDir(tempDir, zipFilePath)
+		if err != nil {
+			return "", err
+		}
+		return zipFilePath, nil
+	} else {
+		// 其他格式，上传zip到云存储并使用转换API
+		zipFilePath := filepath.Join("/tmp/car/download", fmt.Sprintf("%s.zip", carName))
+		err = s.createZipFromTempDir(tempDir, zipFilePath)
+		if err != nil {
+			return "", err
+		}
+		fileUri, err := s.AO.AddAliOss(carName, zipFilePath)
+		if err != nil {
+			return "", err
+		}
+		outfile, err := common.ConvertAndQueryModel(fileUri, format)
+		if err != nil {
+			return "", fmt.Errorf("failed to convert and query model: %v", err)
+		}
+		return outfile, nil
 	}
-
-	// 将zip上传到alioss上
-	fileUri, err := s.AO.AddAliOss(carName, zipFilePath)
-	if err != nil {
-		return "", err
-	}
-
-	// 使用dwhere模块的新函数来请求模型转换并查询结果
-	outfile, err := common.ConvertAndQueryModel(fileUri, "obj") // 假设输出格式是 "obj"
-	if err != nil {
-		return "", fmt.Errorf("failed to convert and query model: %v", err)
-	}
-
-	return outfile, nil
 }
 
 // 该函数可能位于DownloadService中

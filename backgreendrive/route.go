@@ -22,7 +22,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 
 	// 下载汽车
 	downloadController := controller.NewDownloadController()
-	r.GET("/car/download/:carName", downloadController.DownloadModel)
+	r.GET("/car/download/:format/:carName", downloadController.DownloadModel)
 
 	// 汽车名字管理
 	nameController := controller.NewNameController()

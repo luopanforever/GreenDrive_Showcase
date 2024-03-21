@@ -16,22 +16,29 @@ func NewDownloadController() *DownloadController {
 }
 
 func (ctrl *DownloadController) DownloadModel(c *gin.Context) {
-	downloadBase := "/tmp/car/download/"
+	format := c.Param("format")
+	carName := c.Param("carName")
 
+	// 先清空临时目录
+	downloadBase := "/tmp/car/download/"
 	err := clearDirectory(downloadBase)
 	if err != nil {
 		response.Fail(c, "Failed to clear /tmp/car/download/ directory", gin.H{"error": err.Error()})
 		return
 	}
 
-	carName := c.Param("carName")
-
-	zipFilePath, err := ctrl.DownloadService.DownloadModelAndResources(carName)
+	// 调用 DownloadService 获取下载链接或文件路径
+	result, err := ctrl.DownloadService.DownloadModelAndResources(carName, format)
 	if err != nil {
 		response.Fail(c, "fail to download model", gin.H{"error": err.Error()})
 		return
 	}
-	println("zipFilePath:", zipFilePath)
-	response.Success(c, gin.H{"fileUri": zipFilePath}, "shangchuanchenggong")
 
+	if format == "gltf" {
+		// 直接返回zip文件
+		c.File(result)
+	} else {
+		// 返回转换后的模型下载链接
+		response.Success(c, gin.H{"fileUri": result}, "Download successful")
+	}
 }
