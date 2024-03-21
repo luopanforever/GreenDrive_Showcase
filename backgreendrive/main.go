@@ -24,6 +24,8 @@ func main() {
 	deClose := config.InItDB()
 	defer config.Close(deClose)
 
+	// 初始化common组件
+
 	r = CollectRoute(r)
 
 	// 测试用

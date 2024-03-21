@@ -1,9 +1,8 @@
 package controller
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/luopanforever/backgreendrive/response"
 	"github.com/luopanforever/backgreendrive/service"
 )
 
@@ -17,15 +16,22 @@ func NewDownloadController() *DownloadController {
 }
 
 func (ctrl *DownloadController) DownloadModel(c *gin.Context) {
+	downloadBase := "/tmp/car/download/"
+
+	err := clearDirectory(downloadBase)
+	if err != nil {
+		response.Fail(c, "Failed to clear /tmp/car/download/ directory", gin.H{"error": err.Error()})
+		return
+	}
+
 	carName := c.Param("carName")
 
 	zipFilePath, err := ctrl.DownloadService.DownloadModelAndResources(carName)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.Fail(c, "fail to download model", gin.H{"error": err.Error()})
 		return
 	}
+	println("zipFilePath:", zipFilePath)
+	response.Success(c, gin.H{"fileUri": zipFilePath}, "shangchuanchenggong")
 
-	c.File(zipFilePath)
-
-	// 可选: 下载后删除zip文件
 }

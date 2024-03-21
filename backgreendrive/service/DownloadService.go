@@ -8,26 +8,36 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/luopanforever/backgreendrive/common"
 	"github.com/luopanforever/backgreendrive/repository"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type DownloadService struct {
 	ModelRepo *repository.ModelRepository
-	ShowRepo  repository.ShowRepository
+	ShowRepo  *repository.ShowRepository
+	AO        *common.AliOss
 }
 
 func NewDownloadService() *DownloadService {
 	modelRepo := repository.GetModelRepository()
 	showRepo := repository.GetShowRepository()
+	aO := common.GetAliOss()
 	return &DownloadService{
 		ModelRepo: modelRepo,
-		ShowRepo:  *showRepo,
+		ShowRepo:  showRepo,
+		AO:        aO,
 	}
 }
 
 func (s *DownloadService) DownloadModelAndResources(carName string) (string, error) {
 	modelData, err := s.ModelRepo.FindModelDataByCarName(carName + ".gltf")
+	if err != nil {
+		return "", err
+	}
+
+	// 清除alioss上objectname为carname的zip文件
+	err = s.AO.DeleteAliOss(carName)
 	if err != nil {
 		return "", err
 	}
@@ -52,7 +62,19 @@ func (s *DownloadService) DownloadModelAndResources(carName string) (string, err
 		return "", err
 	}
 
-	return zipFilePath, nil
+	// 将zip上传到alioss上
+	fileUri, err := s.AO.AddAliOss(carName, zipFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	// 使用dwhere模块的新函数来请求模型转换并查询结果
+	outfile, err := common.ConvertAndQueryModel(fileUri, "obj") // 假设输出格式是 "obj"
+	if err != nil {
+		return "", fmt.Errorf("failed to convert and query model: %v", err)
+	}
+
+	return outfile, nil
 }
 
 // 该函数可能位于DownloadService中
@@ -143,7 +165,7 @@ func (s *DownloadService) createZipFromTempDir(tempDir, zipFilePath string) erro
 				return err
 			}
 			defer file.Close()
-			_, err = io.Copy(writer, file)
+			_, _ = io.Copy(writer, file)
 		}
 
 		return err
