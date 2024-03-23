@@ -86,6 +86,8 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 
     链接为转换后的地址
 
+  - 在请求时后端会实时报告`stat`，`stat`含义参考后端说明文档
+
 
 
 待处理`bug`
