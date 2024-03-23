@@ -71,50 +71,64 @@ func ConvertModel(infileURL, outType, appID, appKey string) ([]byte, error) {
 	return body, nil
 }
 
-func QueryConversionResult(fileID, appID, appKey string) (string, error) {
-	baseURL := "https://open.3dwhere.com/api/query"
-	params := url.Values{}
-	params.Add("fileid", fileID)
-	params.Add("appid", appID)
-	requestURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+func QueryConversionResult(fileID, appID, appKey string, timeout int) (string, error) {
+	endTime := time.Now().Add(time.Duration(timeout) * time.Second)
+	for {
+		if time.Now().After(endTime) {
+			// 超时退出
+			return "", fmt.Errorf("request model conversion timeout")
+		}
 
-	sign := GenerateSign(requestURL, appKey)
-	requestURLWithSign := fmt.Sprintf("%s&sign=%s", requestURL, sign)
+		baseURL := "https://open.3dwhere.com/api/query"
+		params := url.Values{}
+		params.Add("fileid", fileID)
+		params.Add("appid", appID)
+		requestURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 
-	// 发起查询请求
-	resp, err := http.Get(requestURLWithSign)
-	if err != nil {
-		return "", err
+		sign := GenerateSign(requestURL, appKey)
+		requestURLWithSign := fmt.Sprintf("%s&sign=%s", requestURL, sign)
+		// 发起查询请求
+		resp, err := http.Get(requestURLWithSign)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+
+		// 解析响应体
+		var result ConversionResult
+		err = json.Unmarshal([]byte(body), &result)
+		if err != nil {
+			fmt.Println("Error parsing conversion result:", err)
+			return "", nil
+		}
+		println("result.Stat: ", result.Stat)
+		// 检查转换状态
+		if result.Code == "1" {
+			if result.Stat == "10" {
+				// 转换成功且存在转换后的文件
+				return result.OutFile, nil
+			} else if result.Stat == "-1" {
+				// 转换失败
+				return "", fmt.Errorf("conversion failed, desc: %s", result.Desc)
+			}
+			// 其他状态，等待转换完成
+		} else {
+			// 返回错误信息或其他必要的处理
+			return "", fmt.Errorf("conversion failed or still processing, desc: %s", result.Desc)
+		}
+
+		// 如果没有成功也没有失败，等待5秒后重试
+		time.Sleep(5 * time.Second)
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	println("body:", string(body))
-
-	// 解析响应体
-	var result ConversionResult
-	err = json.Unmarshal([]byte(body), &result)
-	if err != nil {
-		fmt.Println("Error parsing conversion result:", err)
-		return "", nil
-	}
-
-	// 根据返回的状态码和信息做进一步处理
-	// 检查状态码和转换结果
-	if result.Code == "1" && result.OutFile != "" {
-		// 转换成功且存在转换后的文件
-		return result.OutFile, nil // 返回转换后的文件下载地址
-	} else {
-		// 返回错误信息或其他必要的处理
-		return "", fmt.Errorf("conversion failed or still processing, desc: %s", result.Desc)
-	}
-
 }
 
 // ConvertAndQueryModel 使用指定的文件URI和输出类型请求模型转换，并查询转换结果
-func ConvertAndQueryModel(fileUri, outType string) (string, error) {
+func ConvertAndQueryModel(fileUri, outType string, timeoutSec int) (string, error) {
 	appID := "y8wDUEW6ry467o36"                  // 你的AppID
 	appKey := "1e603d09deadf33ea28789db9a9315d2" // 你的AppKey
 
@@ -135,12 +149,12 @@ func ConvertAndQueryModel(fileUri, outType string) (string, error) {
 	}
 
 	// 等待转换处理完成
-	time.Sleep(60 * time.Second) // 根据实际情况调整等待时间
+	// time.Sleep(60 * time.Second) // 根据实际情况调整等待时间
 
 	// 查询转换结果
-	outfile, err := QueryConversionResult(resp.FileID, appID, appKey)
+	outfile, err := QueryConversionResult(resp.FileID, appID, appKey, timeoutSec)
 	if err != nil {
-		return "", fmt.Errorf("failed to query conversion result: %v", err)
+		return "", err
 	}
 
 	return outfile, nil

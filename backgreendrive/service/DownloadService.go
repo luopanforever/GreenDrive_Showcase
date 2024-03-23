@@ -30,7 +30,7 @@ func NewDownloadService() *DownloadService {
 	}
 }
 
-func (s *DownloadService) DownloadModelAndResources(carName, format string) (string, error) {
+func (s *DownloadService) DownloadModelAndResources(carName, format string, timeoutSec int) (string, error) {
 	modelData, err := s.ModelRepo.FindModelDataByCarName(carName + ".gltf")
 	if err != nil {
 		return "", err
@@ -66,9 +66,9 @@ func (s *DownloadService) DownloadModelAndResources(carName, format string) (str
 		if err != nil {
 			return "", err
 		}
-		outfile, err := common.ConvertAndQueryModel(fileUri, format)
+		outfile, err := common.ConvertAndQueryModel(fileUri, format, timeoutSec)
 		if err != nil {
-			return "", fmt.Errorf("failed to convert and query model: %v", err)
+			return "", err
 		}
 		return outfile, nil
 	}

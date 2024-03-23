@@ -28,9 +28,9 @@ func (ctrl *DownloadController) DownloadModel(c *gin.Context) {
 	}
 
 	// 调用 DownloadService 获取下载链接或文件路径
-	result, err := ctrl.DownloadService.DownloadModelAndResources(carName, format)
+	result, err := ctrl.DownloadService.DownloadModelAndResources(carName, format, 180) // 第三个参数表示180秒超时
 	if err != nil {
-		response.Fail(c, "fail to download model", gin.H{"error": err.Error()})
+		response.Fail(c, "fail to download model and convert format", gin.H{"error": err.Error()})
 		return
 	}
 
