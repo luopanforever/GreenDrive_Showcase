@@ -26,8 +26,8 @@ func (s *ModelService) RemoveResourceFromModel(modelName string, resourceName st
 }
 
 // CreateModelData 调用ModelRepository的CreateModelData方法创建模型数据
-func (s *ModelService) CreateModelData(modelName string, modelFileId primitive.ObjectID) error {
-	return s.Repo.CreateModelData(modelName, modelFileId)
+func (s *ModelService) CreateModelData(carMetaData entity.CarMetadata) error {
+	return s.Repo.CreateModelData(carMetaData)
 }
 
 // DeleteModelData 调用ModelRepository的DeleteModelData方法删除模型数据

@@ -45,17 +45,17 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 		return
 	}
 
-	carId := c.Param("carId")
+	carName := c.Param("carName")
 
 	// 开局检查carnames里面有没有carId
-	exists, err := ctrl.nameService.CarNameExists(carId)
+	exists, err := ctrl.nameService.CarNameExists(carName)
 	if err != nil {
 		response.Fail(c, "Failed to check car name existence", gin.H{"error": err.Error()})
 		return
 	}
 
 	if exists {
-		response.Fail(c, "Car name already exists", gin.H{"error": fmt.Errorf("car name '%s' has already been used", carId).Error()})
+		response.Fail(c, "Car name already exists", gin.H{"error": fmt.Errorf("car name '%s' has already been used", carName).Error()})
 		return
 	}
 
@@ -76,26 +76,26 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 	carNames := make([]string, 0)
 	for _, file := range files {
 		fileName = append(fileName, file.Filename)
-		carNames = append(carNames, carId)
-		zipFilePath, err := ctrl.uploadService.SaveZipFile(file, carId)
+		carNames = append(carNames, carName)
+		zipFilePath, err := ctrl.uploadService.SaveZipFile(file, carName)
 		if err != nil {
 			response.Fail(c, "Failed to save zip file", gin.H{"error": err.Error()})
 			return
 		}
 
-		unzipDir, err := ctrl.uploadService.UnzipFiles(zipFilePath, carId)
+		unzipDir, err := ctrl.uploadService.UnzipFiles(zipFilePath, carName)
 		if err != nil {
 			response.Fail(c, "Failed to unzip files", gin.H{"error": err.Error()})
 			return
 		}
 
-		err = ctrl.uploadService.ProcessUploadsAndResources(unzipDir, carId, ctrl.modelService, ctrl.nameService)
+		err = ctrl.uploadService.ProcessUploadsAndResources(unzipDir, carName, ctrl.modelService, ctrl.nameService)
 		if err != nil {
 			response.Fail(c, "Failed to process uploads and resources", gin.H{"error": err.Error()})
 			return
 		}
 
-		carId, err = incrementNumberSuffix(carId)
+		carName, err = incrementNumberSuffix(carName)
 		if err != nil {
 			response.Fail(c, "Failed to increment carId", gin.H{"error": err.Error()})
 			return

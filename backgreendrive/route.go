@@ -14,7 +14,7 @@ func CollectRoute(r *gin.Engine) *gin.Engine {
 	// 上传文件
 	// r.POST("/car/upload", controller.UploadController_) //后期需要优化为"/car/upload/:carId"
 	uploadController := controller.NewUploadController()
-	r.POST("/car/upload/:carId", uploadController.UploadZips)
+	r.POST("/car/upload/:carName", uploadController.UploadZips)
 	// 删除汽车所有资源
 	r.DELETE("/car/upload/delete/:carName", uploadController.DeleteCar)
 	// 无脑删除所有filechunks资源

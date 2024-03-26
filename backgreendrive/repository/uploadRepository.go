@@ -29,8 +29,8 @@ func GetUploadRepository() *UploadRepository {
 	return newUploadRepository()
 }
 
-// 添加实打实的资源 /tmp/unzipped/car? 返回唯一_id
-func (r *UploadRepository) UploadFsFileChunkModel(filePath, fileName, carId string) (primitive.ObjectID, error) {
+// 添加实打实的资源到gridfs中 /tmp/unzipped/car? 返回唯一_id
+func (r *UploadRepository) UploadFsFileChunkModel(filePath, fileName, carName string) (primitive.ObjectID, error) {
 
 	// 创建一个新的 GridFS bucket
 	bucket, err := gridfs.NewBucket(r.DB)
@@ -53,7 +53,7 @@ func (r *UploadRepository) UploadFsFileChunkModel(filePath, fileName, carId stri
 
 	// 只修改3d汽车gltf的名字
 	if strings.HasSuffix(fileName, ".gltf") {
-		fileName = carId + ".gltf"
+		fileName = carName + ".gltf"
 	}
 
 	// 创建一个新的 GridFS 文件
@@ -159,27 +159,28 @@ func (r *UploadRepository) DeleteAllFsFiles() error {
 	return nil
 }
 
-func (r *UploadRepository) ProcessUploadsAndResources(unzipDir, carId string, modelRepository *ModelRepository, NameRepository *NameRepository) error {
+func (r *UploadRepository) ProcessUploadsAndResources(unzipDir, carName string, modelRepository *ModelRepository, NameRepository *NameRepository) error {
 	unzipDir = unzipDir + "/"
 	println("unzipDir: ", unzipDir)
 	gltfPath := filepath.Join(unzipDir, "scene.gltf")
 	println("gltfPath: ", gltfPath)
-	var fileId primitive.ObjectID
-
+	var carModelData entity.CarMetadata
+	carModelData.Filename = carName
 	if _, err := os.Stat(gltfPath); !os.IsNotExist(err) {
-		fileId, err = r.UploadFsFileChunkModel(unzipDir, "scene.gltf", carId)
+		// 先上传
+		carModelData.ID, err = r.UploadFsFileChunkModel(unzipDir, "scene.gltf", carName)
 		if err != nil {
 			return err
 		}
 
 		// 创建modeldata记录
-		err = modelRepository.CreateModelData(carId, fileId)
+		err = modelRepository.CreateModelData(carModelData)
 		if err != nil {
 			return err
 		}
 
 		// 在carNames中添加carId
-		err = NameRepository.AddCarName(carId)
+		err = NameRepository.AddCarName(carName)
 		if err != nil {
 			return err
 		}
@@ -209,13 +210,13 @@ func (r *UploadRepository) ProcessUploadsAndResources(unzipDir, carId string, mo
 			return nil // 忽略目录本身，但不忽略其内容
 		}
 		if relativePath != "scene.gltf" {
-			fileId, err := r.UploadFsFileChunkModel(unzipDir, relativePath, carId)
+			fileId, err := r.UploadFsFileChunkModel(unzipDir, relativePath, carName)
 			if err != nil {
 				return err
 			}
 
 			// 添加资源到modelData
-			return modelRepository.AddResourceToModel(carId+".gltf", relativePath, fileId)
+			return modelRepository.AddResourceToModel(carName+".gltf", relativePath, fileId)
 		}
 
 		return nil
