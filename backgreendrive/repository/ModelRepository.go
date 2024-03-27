@@ -51,7 +51,9 @@ func GetModelRepository() *ModelRepository {
 //		}
 //		response.Success(c, gin.H{"resource name": modelName, "objectId": resourceFileId}, "add success")
 //	}
-func (r *ModelRepository) AddResourceToModel(modelName string, resourceName string, resourceFileId primitive.ObjectID) error {
+func (r *ModelRepository) AddResourceToModel(modelName string, resourceInfo entity.ResourceInfo) error {
+	resourceName := resourceInfo.Name
+	resourceFileId := resourceInfo.FileId
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

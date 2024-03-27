@@ -159,6 +159,7 @@ func (r *UploadRepository) DeleteAllFsFiles() error {
 	return nil
 }
 
+// 根据本地存储的解压文件的位置逐个上传文件到服务器中
 func (r *UploadRepository) ProcessUploadsAndResources(unzipDir, carName string, modelRepository *ModelRepository, NameRepository *NameRepository) error {
 	unzipDir = unzipDir + "/"
 	println("unzipDir: ", unzipDir)
@@ -166,26 +167,26 @@ func (r *UploadRepository) ProcessUploadsAndResources(unzipDir, carName string, 
 	println("gltfPath: ", gltfPath)
 	var carModelData entity.CarMetadata
 	carModelData.Filename = carName
+	// 先上传scene.gltf的资源
 	if _, err := os.Stat(gltfPath); !os.IsNotExist(err) {
-		// 先上传
 		carModelData.ID, err = r.UploadFsFileChunkModel(unzipDir, "scene.gltf", carName)
 		if err != nil {
 			return err
 		}
 
-		// 创建modeldata记录
+		// 创建modeldata集合
 		err = modelRepository.CreateModelData(carModelData)
 		if err != nil {
 			return err
 		}
 
-		// 在carNames中添加carId
+		// 在carNames中添加carName
 		err = NameRepository.AddCarName(carName)
 		if err != nil {
 			return err
 		}
 	}
-
+	// 逐个添加除了scene.gltf的其他资源文件
 	return filepath.Walk(unzipDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -210,13 +211,16 @@ func (r *UploadRepository) ProcessUploadsAndResources(unzipDir, carName string, 
 			return nil // 忽略目录本身，但不忽略其内容
 		}
 		if relativePath != "scene.gltf" {
+			// 上传资源到resource中
 			fileId, err := r.UploadFsFileChunkModel(unzipDir, relativePath, carName)
 			if err != nil {
 				return err
 			}
-
-			// 添加资源到modelData
-			return modelRepository.AddResourceToModel(carName+".gltf", relativePath, fileId)
+			var resourceInfo entity.ResourceInfo
+			resourceInfo.FileId = fileId
+			resourceInfo.Name = relativePath
+			// 添加资源到modelData的resource数组
+			return modelRepository.AddResourceToModel(carName+".gltf", resourceInfo)
 		}
 
 		return nil

@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/luopanforever/backgreendrive/entity"
 	"github.com/luopanforever/backgreendrive/repository"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ModelService struct {
@@ -16,19 +15,19 @@ func NewModelService() *ModelService {
 }
 
 // AddResourceToModel 调用ModelRepository的AddResourceToModel方法添加资源到模型
-func (s *ModelService) AddResourceToModel(modelName string, resourceName string, resourceFileId primitive.ObjectID) error {
-	return s.Repo.AddResourceToModel(modelName, resourceName, resourceFileId)
-}
+// func (s *ModelService) AddResourceToModel(modelName string, resourceName string, resourceFileId primitive.ObjectID) error {
+// 	return s.Repo.AddResourceToModel(modelName, resourceName, resourceFileId)
+// }
 
 // RemoveResourceFromModel 调用ModelRepository的RemoveResourceFromModel方法从模型中移除资源
-func (s *ModelService) RemoveResourceFromModel(modelName string, resourceName string) error {
-	return s.Repo.RemoveResourceFromModel(modelName, resourceName)
-}
+// func (s *ModelService) RemoveResourceFromModel(modelName string, resourceName string) error {
+// 	return s.Repo.RemoveResourceFromModel(modelName, resourceName)
+// }
 
 // CreateModelData 调用ModelRepository的CreateModelData方法创建模型数据
-func (s *ModelService) CreateModelData(carMetaData entity.CarMetadata) error {
-	return s.Repo.CreateModelData(carMetaData)
-}
+// func (s *ModelService) CreateModelData(carMetaData entity.CarMetadata) error {
+// 	return s.Repo.CreateModelData(carMetaData)
+// }
 
 // DeleteModelData 调用ModelRepository的DeleteModelData方法删除模型数据
 func (s *ModelService) DeleteModelData(modelName string) error {

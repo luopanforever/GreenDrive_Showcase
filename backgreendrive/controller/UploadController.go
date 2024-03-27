@@ -59,36 +59,36 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 		return
 	}
 
-	// 开始获取资源
+	// 获取所有的zips文件
 	form, err := c.MultipartForm()
 	if err != nil {
 		response.Fail(c, "Failed to parse multipart form", gin.H{"error": err.Error()})
 		return
 	}
-
 	files := form.File["file[]"]
 	if len(files) == 0 { // 检查是否有上传的文件
 		response.Fail(c, "No files uploaded", gin.H{"error": "form is empty"})
 		return
 	}
-
+	// 记录用于返回给前端
 	fileName := make([]string, 0)
 	carNames := make([]string, 0)
 	for _, file := range files {
 		fileName = append(fileName, file.Filename)
 		carNames = append(carNames, carName)
+		// 将传进来的zip文件放入tmp文件夹中并返回本地存储位置
 		zipFilePath, err := ctrl.uploadService.SaveZipFile(file, carName)
 		if err != nil {
 			response.Fail(c, "Failed to save zip file", gin.H{"error": err.Error()})
 			return
 		}
-
+		// 将存好的zip文件解压，放进另一个tmp文件夹中并返回本地存储位置
 		unzipDir, err := ctrl.uploadService.UnzipFiles(zipFilePath, carName)
 		if err != nil {
 			response.Fail(c, "Failed to unzip files", gin.H{"error": err.Error()})
 			return
 		}
-
+		// 根据本地存储的解压文件的位置逐个上传文件到服务器中
 		err = ctrl.uploadService.ProcessUploadsAndResources(unzipDir, carName, ctrl.modelService, ctrl.nameService)
 		if err != nil {
 			response.Fail(c, "Failed to process uploads and resources", gin.H{"error": err.Error()})
@@ -136,15 +136,16 @@ func (ctrl *UploadController) UploadZips(c *gin.Context) {
 // 	response.Success(c, gin.H{"message": "All files uploaded successfully"}, "upload success")
 // }
 
-func (ctrl *UploadController) DeleteAllFiles(c *gin.Context) {
-	err := ctrl.uploadService.DeleteAllFiles()
-	if err != nil {
-		response.Fail(c, "Failed to delete all files", gin.H{"error": err.Error()})
-		return
-	}
+// 测试用deleteallfiles
+// func (ctrl *UploadController) DeleteAllFiles(c *gin.Context) {
+// 	err := ctrl.uploadService.DeleteAllFiles()
+// 	if err != nil {
+// 		response.Fail(c, "Failed to delete all files", gin.H{"error": err.Error()})
+// 		return
+// 	}
 
-	response.Success(c, nil, "All files deleted successfully")
-}
+// 	response.Success(c, nil, "All files deleted successfully")
+// }
 
 func (ctrl *UploadController) DeleteCar(c *gin.Context) {
 	carName := c.Param("carName") + ".gltf"
