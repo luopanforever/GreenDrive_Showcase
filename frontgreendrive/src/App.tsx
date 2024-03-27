@@ -16,7 +16,6 @@ import { RcFile } from "antd/es/upload"
 import Request from "./api"
 import { css } from "@emotion/css"
 import { useLocalStorageState } from "ahooks"
-import { ModelType } from "./constants/enum"
 /* type Response<T extends Record<string, any>> = {
   code: number
   data: T
@@ -138,9 +137,9 @@ const App: React.FC = () => {
     })
   }
 
-  const currentModelType = "gltf"
+  // const currentModelType = "gltf"
   const handleDownload = () => {
-    console.log(Object.values(ModelType))
+    // console.log(Object.values(ModelType))
     /* if (currentModelType === ModelType.GLTF) {
       console.log('直接下载')
     } else {
