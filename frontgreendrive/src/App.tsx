@@ -32,17 +32,44 @@ const App: React.FC = () => {
   const [carAvailableName, setCarAvailableName] = useState("")
   // 触发Effect更新
   const [triggerEffect, setTriggerEffect] = useState(false)
-  useEffect(() => {
-    // 获取汽车列表
-    Request.get<CarList>("/names/list").then((res) => {
-      setCarList(res.data.names)
-    })
 
-    // 获取有效可用汽⻋名字
-    Request.get<CarAvailable>("/names/available").then((res) => {
-      setCarAvailableName(res.data.availableName)
-    })
-  }, [selectedUploadFiles, triggerEffect])
+  // useEffect(() => {
+  //   // 获取汽车列表
+  //   Request.get<CarList>("/names/list").then((res) => {
+  //     setCarList(res.data.names)
+  //   })
+
+  //   // 获取有效可用汽⻋名字
+  //   Request.get<CarAvailable>("/names/available").then((res) => {
+  //     setCarAvailableName(res.data.availableName)
+  //   })
+  // }, [selectedUploadFiles, triggerEffect])
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      const carListRes = await Request.get<CarList>("/names/list");
+      const carList = carListRes.data.names;
+      setCarList(carList);
+  
+      const carAvailableRes = await Request.get<CarAvailable>("/names/available");
+      const availableName = carAvailableRes.data.availableName;
+      setCarAvailableName(availableName);
+  
+      // 如果只有car1表示没有车辆，则展示提示上传界面
+      if (availableName === 'car1') {
+        // 显示提示上传的界面
+        setSelectedCar('');
+      } else {
+        // 根据availableName展示上一个车辆
+        const carNumber = parseInt(availableName.replace('car', ''));
+        const displayCar = 'car' + (carNumber - 1);
+        setSelectedCar(displayCar);
+      }
+    };
+  
+    fetchData();
+  }, [triggerEffect, selectedUploadFiles]);
+
 
   const props: UploadProps = {
     fileList: selectedUploadFiles,
