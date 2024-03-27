@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from "react"
-import { Button, Upload, message, Select, Space, Menu, Popconfirm } from "antd"
+import {
+  Button,
+  Upload,
+  message,
+  Select,
+  Space,
+  Menu,
+  Popconfirm,
+  FloatButton,
+} from "antd"
 import type { UploadProps } from "antd"
 import { UploadOutlined, CloseCircleOutlined } from "@ant-design/icons"
 import ShowModel from "./ShowModel"
 import { RcFile } from "antd/es/upload"
 import Request from "./api"
 import { css } from "@emotion/css"
+import { useLocalStorageState } from "ahooks"
+import { ModelType } from "./constants/enum"
 /* type Response<T extends Record<string, any>> = {
   code: number
   data: T
@@ -25,9 +36,14 @@ const App: React.FC = () => {
   // 所选择的上传文件
   const [selectedUploadFiles, setSelectedUploadFiles] = useState<RcFile[]>([])
   // 有效的汽车列表
-  const [carList, setCarList] = useState<string[]>(["undefined"]) //undefined初始化占个位
+  const [carList, setCarList] = useState<string[]>([""]) //undefined初始化占个位
   // 选择框选择的汽车
-  const [selectedCar, setSelectedCar] = useState<string>("")
+  const [selectedCar, setSelectedCar] = useLocalStorageState<string>(
+    "currentCar",
+    {
+      defaultValue: carList[0],
+    }
+  )
   // 汽车有效名
   const [carAvailableName, setCarAvailableName] = useState("")
   // 触发Effect更新
@@ -43,6 +59,13 @@ const App: React.FC = () => {
       setCarAvailableName(res.data.availableName)
     })
   }, [selectedUploadFiles, triggerEffect])
+
+  useEffect(() => {
+    // 根据 carList 设置 selectedCar 的默认值
+    if (carList.length > 0) {
+      setSelectedCar(carList[0])
+    }
+  }, [carList])
 
   const props: UploadProps = {
     fileList: selectedUploadFiles,
@@ -110,8 +133,23 @@ const App: React.FC = () => {
   const handleConfirmDelete = (carName: string) => {
     Request.delete<any>(`/upload/delete/${carName}`).then((res) => {
       message.success(res.msg)
+      setSelectedCar(carList[0])
       setTriggerEffect((prev) => !prev)
     })
+  }
+
+  const currentModelType = "gltf"
+  const handleDownload = () => {
+    console.log(Object.values(ModelType))
+    /* if (currentModelType === ModelType.GLTF) {
+      console.log('直接下载')
+    } else {
+      Request.get<any>(`/download/${currentModelType}/${selectedCar}`).then(
+        (res) => {
+          console.log("isffhasidoIJPO", res.data)
+        }
+      )
+    } */
   }
   return (
     <>
@@ -193,6 +231,20 @@ const App: React.FC = () => {
           style={{ width: 600, height: 600 }}
           url={`/car/show/${selectedCar}/${selectedCar}.gltf`}
         />
+
+        <div>
+          {/* <FloatButton onClick={() => console.log("onClick")} /> */}
+          <FloatButton.Group
+            trigger='click'
+            type='primary'
+            style={{ right: 24 }}
+            tooltip={<div>下载不同类型的模型</div>}
+          >
+            <FloatButton description="GLB" onClick={handleDownload} />
+            <FloatButton description="GLB" onClick={handleDownload} />
+            <FloatButton description="GLB" onClick={handleDownload} />
+          </FloatButton.Group>
+        </div>
       </section>
 
       {/* <ShowModel style={{width:600,height:600}} url='https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf'/> */}
