@@ -133,27 +133,27 @@ func ConvertAndQueryModel(fileUri, outType string, timeoutSec int) (string, erro
 	appKey := "1e603d09deadf33ea28789db9a9315d2" // 你的AppKey
 
 	// 调用模型转换API
-	response, err := ConvertModel(fileUri, outType, appID, appKey)
-	if err != nil {
-		return "", fmt.Errorf("failed to request model conversion: %v", err)
-	}
+	// response, err := ConvertModel(fileUri, outType, appID, appKey)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to request model conversion: %v", err)
+	// }
 
-	// 解析转换请求响应
-	var resp ConvertResponse
-	err = json.Unmarshal(response, &resp)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse conversion response: %v", err)
-	}
-	if resp.Code != "1" {
-		return "", fmt.Errorf("conversion request failed: %s", resp.Desc)
-	}
+	// // 解析转换请求响应
+	// var resp ConvertResponse
+	// err = json.Unmarshal(response, &resp)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to parse conversion response: %v", err)
+	// }
+	// if resp.Code != "1" {
+	// 	return "", fmt.Errorf("conversion request failed: %s", resp.Desc)
+	// }
 
 	// 等待转换处理完成
 	// time.Sleep(60 * time.Second) // 根据实际情况调整等待时间
 
 	// 查询转换结果
-	outfile, err := QueryConversionResult(resp.FileID, appID, appKey, timeoutSec)
-	// outfile, err := QueryConversionResult("k0DRt1sqMv2Jo6vk", appID, appKey, timeoutSec)
+	// outfile, err := QueryConversionResult(resp.FileID, appID, appKey, timeoutSec)
+	outfile, err := QueryConversionResult("k0DRt1sqMv2Jo6vk", appID, appKey, timeoutSec)
 	if err != nil {
 		return "", err
 	}
