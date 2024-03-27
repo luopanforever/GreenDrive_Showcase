@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from "react"
-import { Button, Upload, message, Select, Space, Menu, Popconfirm, Modal, Spin } from "antd";
+import {
+  Button,
+  Upload,
+  message,
+  Select,
+  Space,
+  Menu,
+  Popconfirm,
+  Modal,
+  Spin,
+} from "antd"
 import type { UploadProps } from "antd"
 import { UploadOutlined, CloseCircleOutlined } from "@ant-design/icons"
 import ShowModel from "./ShowModel"
 import { RcFile } from "antd/es/upload"
 import Request from "./api"
 import { css } from "@emotion/css"
-import { request } from "http";
-/* type Response<T extends Record<string, any>> = {
-  code: number
-  data: T
-  msg: string
-}
-interface CarList extends Response<{ names: string[] }> {}
-interface CarAvailable extends Response<{ availableName: string }> {} */
 
 interface CarList {
   names: string[]
@@ -26,7 +28,7 @@ const App: React.FC = () => {
   // 所选择的上传文件
   const [selectedUploadFiles, setSelectedUploadFiles] = useState<RcFile[]>([])
   // 有效的汽车列表
-  const [carList, setCarList] = useState<string[]>(["undefined"]) //undefined初始化占个位
+  const [carList, setCarList] = useState<string[]>([]) //undefined初始化占个位
   // 选择框选择的汽车
   const [selectedCar, setSelectedCar] = useState<string>("")
   // 汽车有效名
@@ -34,11 +36,11 @@ const App: React.FC = () => {
   // 触发Effect更新
   const [triggerEffect, setTriggerEffect] = useState(false)
   // 控制 Spin 显示
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   // 添加新的状态
-  const [isDownloadModalVisible, setIsDownloadModalVisible] = useState(false); // 新增状态 - 控制模态框是否可见
-  const [downloadUrl, setDownloadUrl] = useState(""); // 新增状态 - 存储下载链接
+  const [isDownloadModalVisible, setIsDownloadModalVisible] = useState(false) // 新增状态 - 控制模态框是否可见
+  const [downloadUrl, setDownloadUrl] = useState("") // 新增状态 - 存储下载链接
 
   // useEffect(() => {
   //   // 获取汽车列表
@@ -52,31 +54,29 @@ const App: React.FC = () => {
   //   })
   // }, [selectedUploadFiles, triggerEffect])
 
+  const fetchData = async () => {
+    const carListRes = await Request.get<CarList>("/names/list")
+    const carList = carListRes.data.names
+    setCarList(carList)
+
+    const carAvailableRes = await Request.get<CarAvailable>("/names/available")
+    const availableName = carAvailableRes.data.availableName
+    setCarAvailableName(availableName)
+
+    // 如果只有car1表示没有车辆，则展示提示上传界面
+    if (availableName === "car1") {
+      // 显示提示上传的界面
+      setSelectedCar("")
+    } else {
+      // 根据availableName展示上一个车辆
+      const carNumber = parseInt(availableName.replace("car", ""))
+      const displayCar = "car" + (carNumber - 1)
+      setSelectedCar(displayCar)
+    }
+  }
   useEffect(() => {
-    const fetchData = async () => {
-      const carListRes = await Request.get<CarList>("/names/list");
-      const carList = carListRes.data.names;
-      setCarList(carList);
-
-      const carAvailableRes = await Request.get<CarAvailable>("/names/available");
-      const availableName = carAvailableRes.data.availableName;
-      setCarAvailableName(availableName);
-
-      // 如果只有car1表示没有车辆，则展示提示上传界面
-      if (availableName === 'car1') {
-        // 显示提示上传的界面
-        setSelectedCar('');
-      } else {
-        // 根据availableName展示上一个车辆
-        const carNumber = parseInt(availableName.replace('car', ''));
-        const displayCar = 'car' + (carNumber - 1);
-        setSelectedCar(displayCar);
-      }
-    };
-
-    fetchData();
-  }, [triggerEffect, selectedUploadFiles]);
-
+    fetchData()
+  }, [triggerEffect, selectedUploadFiles])
 
   const props: UploadProps = {
     fileList: selectedUploadFiles,
@@ -135,9 +135,9 @@ const App: React.FC = () => {
 
   // 处理下载的方法
   const handleDownload = async (format: string) => {
-    setIsDownloadModalVisible(false); // 关闭模态框
-    setLoading(true); // 开始加载
-    if (format === 'gltf') {
+    setIsDownloadModalVisible(false) // 关闭模态框
+    setLoading(true) // 开始加载
+    if (format === "gltf") {
       // 如果是gltf格式，发送请求后直接下载文件
       // 为什么下列提取不了文件？
       // downloadFile(`/download/${format}/${selectedCar}`,`${selectedCar}.zip`)
@@ -145,14 +145,14 @@ const App: React.FC = () => {
       // 这个却可以
       try {
         const response = await fetch(`/car/download/${format}/${selectedCar}`, {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Content-Type': 'application/octet-stream', // 指定下载文件的类型
+            "Content-Type": "application/octet-stream", // 指定下载文件的类型
           },
-        });
+        })
 
-        const blob = await response.blob(); // 将文件流转换为 Blob 对象
-        const url = URL.createObjectURL(blob); // 创建 Blob 对象的 URL
+        const blob = await response.blob() // 将文件流转换为 Blob 对象
+        const url = URL.createObjectURL(blob) // 创建 Blob 对象的 URL
         // const a = document.createElement('a'); // 创建一个隐藏的<a>元素
         // a.href = url; // 设置<a>元素的链接
         // a.download = `${selectedCar}.zip`; // 设置下载文件的名称
@@ -161,51 +161,50 @@ const App: React.FC = () => {
         // document.body.removeChild(a); // 下载完成后移除<a>元素
         // console.log(url)
         downloadFile(url, `${selectedCar}.zip`)
-        URL.revokeObjectURL(url); // 释放 Blob 对象的 URL
+        URL.revokeObjectURL(url) // 释放 Blob 对象的 URL
       } catch (error) {
-
-        message.error('下载失败，请稍后再试！');
+        message.error("下载失败，请稍后再试！")
       } finally {
-        setLoading(false); // 结束加载 
+        setLoading(false) // 结束加载
       }
     } else {
       // 如果是其他格式，发送请求获取下载链接后下载文件
       try {
-        const response = await Request.get(`/download/${format}/${selectedCar}`);
-        const downloadUrl = response.data.fileUri;
+        const response = await Request.get(`/download/${format}/${selectedCar}`)
+        const downloadUrl = response.data.fileUri
         // 调用downloadFile来下载文件
-        downloadFile(downloadUrl, `${selectedCar}.zip`);
+        downloadFile(downloadUrl, `${selectedCar}.zip`)
         // setDownloadUrl(downloadUrl); // 设置下载链接
         // window.open(downloadUrl); // 打开下载链接
       } catch (error) {
-        message.error("下载失败，请稍后再试！");
+        message.error("下载失败，请稍后再试！")
       } finally {
-        setLoading(false); // 结束加载
+        setLoading(false) // 结束加载
       }
     }
-  };
+  }
 
   // 下载文件的函数，用于代替window.open
   const downloadFile = (href: string, filename: string) => {
     // 创建隐藏的可下载链接
-    const element = document.createElement('a');
+    const element = document.createElement("a")
     // element.setAttribute('href', href);
     // element.setAttribute('download', filename);
     element.href = href
     element.download = filename
 
     // 设置样式以保证它不会显示在页面上
-    element.style.display = 'none';
+    element.style.display = "none"
 
     // 将其加入到文档中
-    document.body.appendChild(element);
+    document.body.appendChild(element)
 
     // 点击链接
-    element.click();
+    element.click()
 
     // 移除链接
-    document.body.removeChild(element);
-  };
+    document.body.removeChild(element)
+  }
 
   // 选择切换汽车
   const [selectOpen, setSelectOpen] = useState<boolean>(false)
@@ -223,101 +222,138 @@ const App: React.FC = () => {
   }
   return (
     <>
-      <Button type="primary" onClick={() => setIsDownloadModalVisible(true)}>
-        下载汽车模型
-      </Button>
+      {!!carList.length && (
+        <Button
+          type='primary'
+          onClick={() => setIsDownloadModalVisible(true)}
+          className={css`
+            position: fixed;
+            top: 50px;
+            left: 0;
+            z-index: 9999;
+          `}
+        >
+          下载汽车模型
+        </Button>
+      )}
       <Modal
-        title="下载汽车模型"
+        title='下载汽车模型'
         visible={isDownloadModalVisible}
         onOk={() => setIsDownloadModalVisible(false)}
         onCancel={() => setIsDownloadModalVisible(false)}
         footer={null} // 不使用默认底部按钮
+        zIndex={99999}
       >
         {/* 这里是模态框的内容，可以根据需要添加下载选项 */}
-        <Button onClick={() => handleDownload('fbx')}>下载 FBX</Button>
-        <Button onClick={() => handleDownload('usdz')}>下载 USDZ</Button>
-        <Button onClick={() => handleDownload('gltf')}>下载 glTF</Button>
-        <Button onClick={() => handleDownload('glb')}>下载 GLB</Button>
+        <Button onClick={() => handleDownload("fbx")}>下载 FBX</Button>
+        <Button onClick={() => handleDownload("usdz")}>下载 USDZ</Button>
+        <Button onClick={() => handleDownload("gltf")}>下载 glTF</Button>
+        <Button onClick={() => handleDownload("glb")}>下载 GLB</Button>
       </Modal>
 
-      <section
+      {/* <section
         style={{
           display: "flex",
           justifyContent: "space-between",
           marginBottom: "20px",
         }}
+      > */}
+      <div
+        className={css`
+          position: fixed;
+          top: 90px;
+          left: 0;
+          z-index: 9999;
+        `}
       >
-        <div>
-          {!carList.length && <p>数据库中还没有车辆请上传</p>}
-          <Upload {...props}>
-            <Button icon={<UploadOutlined />}>上传</Button>
-          </Upload>
-          <Button
-            type='primary'
-            onClick={handleUpload}
-            disabled={!selectedUploadFiles.length}
+        {!carList.length && (
+          <p
             className={css`
-              margin-top: 16px;
-              visibility: ${selectedUploadFiles.length ? "visible" : "hidden"};
+              position: fixed;
+              top: 0;
+              left: 50%;
+              transform: translateX(-50%);
             `}
           >
-            开始上传
-          </Button>
-        </div>
+            数据库中还没有车辆请上传
+          </p>
+        )}
+        <Upload {...props}>
+          <Button icon={<UploadOutlined />}>上传</Button>
+        </Upload>
+        <Button
+          type='primary'
+          onClick={handleUpload}
+          disabled={!selectedUploadFiles.length}
+          className={css`
+            margin-top: 16px;
+            visibility: ${selectedUploadFiles.length ? "visible" : "hidden"};
+          `}
+        >
+          开始上传
+        </Button>
+      </div>
 
-        <Space wrap>
-          {!!carList.length && (
-            <Select
-              style={{ width: 120 }}
-              value={selectedCar}
-              open={selectOpen}
-              onDropdownVisibleChange={(visible) => setSelectOpen(visible)}
-              dropdownRender={() => (
-                <Menu>
-                  {carList.length &&
-                    carList.map((item) => (
-                      <Menu.Item
-                        key={item}
-                        onClick={() => handleSelectChange(item)}
+      <Space
+        wrap
+        className={css`
+          position: fixed;
+          top: 0;
+          right: 0;
+          z-index: 9999;
+        `}
+      >
+        {!!carList.length && (
+          <Select
+            style={{ width: 120 }}
+            value={selectedCar}
+            open={selectOpen}
+            onDropdownVisibleChange={(visible) => setSelectOpen(visible)}
+            dropdownRender={() => (
+              <Menu>
+                {carList.length &&
+                  carList.map((item) => (
+                    <Menu.Item
+                      key={item}
+                      onClick={() => handleSelectChange(item)}
+                    >
+                      <div
+                        className={css`
+                          display: flex;
+                          justify-content: space-between;
+                        `}
                       >
-                        <div
-                          className={css`
-                            display: flex;
-                            justify-content: space-between;
-                          `}
-                        >
-                          <span>{item}</span>
+                        <span>{item}</span>
 
-                          <Popconfirm
-                            // onCancel={cancel}
-                            title={`确定删除这个${item}模型?`}
-                            okText='确定'
-                            cancelText='取消'
-                            onConfirm={() => handleConfirmDelete(item)}
-                          >
-                            <CloseCircleOutlined
-                              className={css`
-                                &:hover {
-                                  color: red;
-                                }
-                              `}
-                            />
-                          </Popconfirm>
-                        </div>
-                      </Menu.Item>
-                    ))}
-                </Menu>
-              )}
-            />
-          )}
-        </Space>
-      </section>
+                        <Popconfirm
+                          // onCancel={cancel}
+                          title={`确定删除这个${item}模型?`}
+                          okText='确定'
+                          cancelText='取消'
+                          onConfirm={() => handleConfirmDelete(item)}
+                        >
+                          <CloseCircleOutlined
+                            className={css`
+                              &:hover {
+                                color: red;
+                              }
+                            `}
+                          />
+                        </Popconfirm>
+                      </div>
+                    </Menu.Item>
+                  ))}
+              </Menu>
+            )}
+          />
+        )}
+      </Space>
+      {/* </section> */}
 
       <section>
-
-        <Spin spinning={loading} tip="下载中...">
+        <Spin spinning={loading} tip='下载中...'>
           <ShowModel
-            style={{ width: 600, height: 600 }}
+            style={{ width: "100vw", height: "100vh" }}
             url={`/car/show/${selectedCar}/${selectedCar}.gltf`}
           />
         </Spin>
