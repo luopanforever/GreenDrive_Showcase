@@ -24,6 +24,10 @@ interface CarAvailable {
   availableName: string
 }
 
+const dowloadBtn = css`
+  margin-bottom: 0.5em;
+`
+
 const App: React.FC = () => {
   // 所选择的上传文件
   const [selectedUploadFiles, setSelectedUploadFiles] = useState<RcFile[]>([])
@@ -244,11 +248,33 @@ const App: React.FC = () => {
         footer={null} // 不使用默认底部按钮
         zIndex={99999}
       >
-        {/* 这里是模态框的内容，可以根据需要添加下载选项 */}
-        <Button onClick={() => handleDownload("fbx")}>下载 FBX</Button>
-        <Button onClick={() => handleDownload("usdz")}>下载 USDZ</Button>
-        <Button onClick={() => handleDownload("gltf")}>下载 glTF</Button>
-        <Button onClick={() => handleDownload("glb")}>下载 GLB</Button>
+        <div
+          className={css`
+            display: flex;
+            flex-direction: column;
+          `}
+        >
+          {/* 这里是模态框的内容，可以根据需要添加下载选项 */}
+          <Button onClick={() => handleDownload("gltf")} className={dowloadBtn}>
+            下载 glTF{" "}
+            <span
+              className={css`
+                color: gray;
+              `}
+            >
+              (原格式)
+            </span>
+          </Button>
+          <Button className={dowloadBtn} onClick={() => handleDownload("fbx")}>
+            下载 FBX
+          </Button>
+          <Button className={dowloadBtn} onClick={() => handleDownload("usdz")}>
+            下载 USDZ
+          </Button>
+          <Button className={dowloadBtn} onClick={() => handleDownload("glb")}>
+            下载 GLB
+          </Button>
+        </div>
       </Modal>
 
       {/* <section
