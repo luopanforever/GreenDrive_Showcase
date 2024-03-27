@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react"
-import { Button, Upload, message, Select, Space, Menu, Popconfirm } from "antd"
+import { Button, Upload, message, Select, Space, Menu, Popconfirm, Modal, Spin } from "antd";
 import type { UploadProps } from "antd"
 import { UploadOutlined, CloseCircleOutlined } from "@ant-design/icons"
 import ShowModel from "./ShowModel"
 import { RcFile } from "antd/es/upload"
 import Request from "./api"
 import { css } from "@emotion/css"
+import { request } from "http";
 /* type Response<T extends Record<string, any>> = {
   code: number
   data: T
@@ -32,6 +33,12 @@ const App: React.FC = () => {
   const [carAvailableName, setCarAvailableName] = useState("")
   // 触发Effect更新
   const [triggerEffect, setTriggerEffect] = useState(false)
+  // 控制 Spin 显示
+  const [loading, setLoading] = useState(false);
+
+  // 添加新的状态
+  const [isDownloadModalVisible, setIsDownloadModalVisible] = useState(false); // 新增状态 - 控制模态框是否可见
+  const [downloadUrl, setDownloadUrl] = useState(""); // 新增状态 - 存储下载链接
 
   // useEffect(() => {
   //   // 获取汽车列表
@@ -44,17 +51,17 @@ const App: React.FC = () => {
   //     setCarAvailableName(res.data.availableName)
   //   })
   // }, [selectedUploadFiles, triggerEffect])
-  
+
   useEffect(() => {
     const fetchData = async () => {
       const carListRes = await Request.get<CarList>("/names/list");
       const carList = carListRes.data.names;
       setCarList(carList);
-  
+
       const carAvailableRes = await Request.get<CarAvailable>("/names/available");
       const availableName = carAvailableRes.data.availableName;
       setCarAvailableName(availableName);
-  
+
       // 如果只有car1表示没有车辆，则展示提示上传界面
       if (availableName === 'car1') {
         // 显示提示上传的界面
@@ -66,7 +73,7 @@ const App: React.FC = () => {
         setSelectedCar(displayCar);
       }
     };
-  
+
     fetchData();
   }, [triggerEffect, selectedUploadFiles]);
 
@@ -126,6 +133,80 @@ const App: React.FC = () => {
       })
   }
 
+  // 处理下载的方法
+  const handleDownload = async (format: string) => {
+    setIsDownloadModalVisible(false); // 关闭模态框
+    setLoading(true); // 开始加载
+    if (format === 'gltf') {
+      // 如果是gltf格式，发送请求后直接下载文件
+      // 为什么下列提取不了文件？
+      // downloadFile(`/download/${format}/${selectedCar}`,`${selectedCar}.zip`)
+
+      // 这个却可以
+      try {
+        const response = await fetch(`/car/download/${format}/${selectedCar}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/octet-stream', // 指定下载文件的类型
+          },
+        });
+
+        const blob = await response.blob(); // 将文件流转换为 Blob 对象
+        const url = URL.createObjectURL(blob); // 创建 Blob 对象的 URL
+        // const a = document.createElement('a'); // 创建一个隐藏的<a>元素
+        // a.href = url; // 设置<a>元素的链接
+        // a.download = `${selectedCar}.zip`; // 设置下载文件的名称
+        // document.body.appendChild(a); // 将<a>元素添加到页面中
+        // a.click(); // 模拟点击<a>元素进行下载
+        // document.body.removeChild(a); // 下载完成后移除<a>元素
+        // console.log(url)
+        downloadFile(url, `${selectedCar}.zip`)
+        URL.revokeObjectURL(url); // 释放 Blob 对象的 URL
+      } catch (error) {
+
+        message.error('下载失败，请稍后再试！');
+      } finally {
+        setLoading(false); // 结束加载 
+      }
+    } else {
+      // 如果是其他格式，发送请求获取下载链接后下载文件
+      try {
+        const response = await Request.get(`/download/${format}/${selectedCar}`);
+        const downloadUrl = response.data.fileUri;
+        // 调用downloadFile来下载文件
+        downloadFile(downloadUrl, `${selectedCar}.zip`);
+        // setDownloadUrl(downloadUrl); // 设置下载链接
+        // window.open(downloadUrl); // 打开下载链接
+      } catch (error) {
+        message.error("下载失败，请稍后再试！");
+      } finally {
+        setLoading(false); // 结束加载
+      }
+    }
+  };
+
+  // 下载文件的函数，用于代替window.open
+  const downloadFile = (href: string, filename: string) => {
+    // 创建隐藏的可下载链接
+    const element = document.createElement('a');
+    // element.setAttribute('href', href);
+    // element.setAttribute('download', filename);
+    element.href = href
+    element.download = filename
+
+    // 设置样式以保证它不会显示在页面上
+    element.style.display = 'none';
+
+    // 将其加入到文档中
+    document.body.appendChild(element);
+
+    // 点击链接
+    element.click();
+
+    // 移除链接
+    document.body.removeChild(element);
+  };
+
   // 选择切换汽车
   const [selectOpen, setSelectOpen] = useState<boolean>(false)
   const handleSelectChange = async (value: string) => {
@@ -142,6 +223,23 @@ const App: React.FC = () => {
   }
   return (
     <>
+      <Button type="primary" onClick={() => setIsDownloadModalVisible(true)}>
+        下载汽车模型
+      </Button>
+      <Modal
+        title="下载汽车模型"
+        visible={isDownloadModalVisible}
+        onOk={() => setIsDownloadModalVisible(false)}
+        onCancel={() => setIsDownloadModalVisible(false)}
+        footer={null} // 不使用默认底部按钮
+      >
+        {/* 这里是模态框的内容，可以根据需要添加下载选项 */}
+        <Button onClick={() => handleDownload('fbx')}>下载 FBX</Button>
+        <Button onClick={() => handleDownload('usdz')}>下载 USDZ</Button>
+        <Button onClick={() => handleDownload('gltf')}>下载 glTF</Button>
+        <Button onClick={() => handleDownload('glb')}>下载 GLB</Button>
+      </Modal>
+
       <section
         style={{
           display: "flex",
@@ -216,10 +314,13 @@ const App: React.FC = () => {
       </section>
 
       <section>
-        <ShowModel
-          style={{ width: 600, height: 600 }}
-          url={`/car/show/${selectedCar}/${selectedCar}.gltf`}
-        />
+
+        <Spin spinning={loading} tip="下载中...">
+          <ShowModel
+            style={{ width: 600, height: 600 }}
+            url={`/car/show/${selectedCar}/${selectedCar}.gltf`}
+          />
+        </Spin>
       </section>
 
       {/* <ShowModel style={{width:600,height:600}} url='https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF/Duck.gltf'/> */}
