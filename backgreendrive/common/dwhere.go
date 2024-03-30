@@ -40,6 +40,8 @@ func GenerateSign(baseURL, appKey string) string {
 }
 
 func ConvertModel(infileURL, outType, appID, appKey string) ([]byte, error) {
+	println("开始文件上传到dwhere，alioss上的文件uri为：", infileURL)
+
 	// 构造请求URL
 	baseURL := "https://open.3dwhere.com/api/add"
 	params := url.Values{}
@@ -53,7 +55,6 @@ func ConvertModel(infileURL, outType, appID, appKey string) ([]byte, error) {
 
 	// 在请求URL中加入签名
 	requestURLWithSign := fmt.Sprintf("%s&sign=%s", requestURL, sign)
-	println("url = ", requestURLWithSign)
 	// 发起请求
 	resp, err := http.Get(requestURLWithSign)
 	if err != nil {
@@ -65,13 +66,15 @@ func ConvertModel(infileURL, outType, appID, appKey string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	println("上传到dwhere中成功等待转换")
 	// 这里简化处理，直接返回响应体字符串
 	// 实际应用中，你需要解析返回的JSON，提取其中的outfile字段
 	return body, nil
 }
 
 func QueryConversionResult(fileID, appID, appKey string, timeout int) (string, error) {
+	// time.Sleep(2 * time.Second)
+	// return "", fmt.Errorf("request model conversion timeout")
 	endTime := time.Now().Add(time.Duration(timeout) * time.Second)
 	for {
 		if time.Now().After(endTime) {
@@ -153,7 +156,7 @@ func ConvertAndQueryModel(fileUri, outType string, timeoutSec int) (string, erro
 
 	// 查询转换结果
 	// outfile, err := QueryConversionResult(resp.FileID, appID, appKey, timeoutSec)
-	outfile, err := QueryConversionResult("k0DRt1sqMv2Jo6vk", appID, appKey, timeoutSec)
+	outfile, err := QueryConversionResult("dzod3dP7XekwhSj2", appID, appKey, timeoutSec)
 	if err != nil {
 		return "", err
 	}

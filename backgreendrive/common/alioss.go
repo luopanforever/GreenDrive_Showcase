@@ -43,10 +43,12 @@ func GetAliOss() *AliOss {
 func (ao *AliOss) AddAliOss(objectName, localFileName string) (string, error) {
 	// objectName := "car1"
 	// localFileName := "/tmp/car/download/car1.zip"
+	println("开始上传，文件为：", localFileName)
 	err := ao.bucket.PutObjectFromFile(objectName, localFileName)
 	if err != nil {
 		return "", err
 	}
+	println("已经上传到alioss")
 	fileUri := ao.fileUri + objectName
 	return fileUri, nil
 }
