@@ -16,6 +16,8 @@ import ShowModel from "./ShowModel"
 import { RcFile } from "antd/es/upload"
 import Request from "./api"
 import { css } from "@emotion/css"
+import axios from 'axios';
+
 
 interface CarList {
   names: string[]
@@ -141,6 +143,11 @@ const App: React.FC = () => {
   const handleDownload = async (format: string) => {
     setIsDownloadModalVisible(false) // 关闭模态框
     setLoading(true) // 开始加载
+    setLoading(true); // 开始加载
+
+    // 设置最小等待时间为3分钟（180000毫秒）
+    const minimumLoadingTime = 180000;
+    const startTime = Date.now(); // 记录开始时间
     if (format === "gltf") {
       // 如果是gltf格式，发送请求后直接下载文件
       // 为什么下列提取不了文件？
@@ -168,25 +175,63 @@ const App: React.FC = () => {
         URL.revokeObjectURL(url) // 释放 Blob 对象的 URL
       } catch (error) {
         message.error("下载失败，请稍后再试！")
+        setLoading(false)
       } finally {
         setLoading(false) // 结束加载
       }
     } else {
       // 如果是其他格式，发送请求获取下载链接后下载文件
-      try {
-        const response = await Request.get(`/download/${format}/${selectedCar}`)
-        const downloadUrl = response.data.fileUri
-        // 调用downloadFile来下载文件
-        downloadFile(downloadUrl, `${selectedCar}.zip`)
-        // setDownloadUrl(downloadUrl); // 设置下载链接
-        // window.open(downloadUrl); // 打开下载链接
-      } catch (error) {
-        message.error("下载失败，请稍后再试！")
-      } finally {
-        setLoading(false) // 结束加载
-      }
+      // try {
+      //   const response = await Request.get(`/download/${format}/${selectedCar}`, {
+      //     timeout: 180000, // 3分钟超时
+      //   });
+
+      //   // 判断后端返回的状态码
+      //   if (response.code === 200) {
+      //     // 正常返回逻辑
+      //     const downloadUrl = response.data.fileUri;
+      //     downloadFile(downloadUrl, `${selectedCar}.zip`);
+      //   } else if (response.code === 400) {
+      //     // 超时或其他错误处理逻辑
+      //     message.error(response.data.error || "下载失败，请稍后再试！");
+      //   }
+      //   setLoading(false)
+      // } catch (error) {
+      //   console.log(error)
+      //   message.error("下载失败，请稍后再试！")
+      //   // setLoading(false)
+      // }
+      axios.get(`car/download/${format}/${selectedCar}`).then(response => {
+        // 处理响应
+        const { code, data, msg } = response.data;
+        if (code === 200) {
+          // 正常返回逻辑
+          const downloadUrl = data.fileUri;
+          downloadFile(downloadUrl, `${selectedCar}.zip`);
+          setLoading(false)
+        } else if (code === 400) {
+          // 超时或其他错误处理逻辑
+          message.error(msg);
+          setLoading(false)
+        }
+      }).catch(error => {
+        // 检查error.response是否存在
+        if (error.response) {
+          console.log(error.response.status);
+          setLoading(false)
+          // 处理其他错误信息
+        } else {
+          // 处理错误对象不存在的情况
+          console.log('Error', error.message);
+          setLoading(false)
+        }
+      });
     }
   }
+
+
+
+
 
   // 下载文件的函数，用于代替window.open
   const downloadFile = (href: string, filename: string) => {
@@ -268,8 +313,8 @@ const App: React.FC = () => {
           <Button className={dowloadBtn} onClick={() => handleDownload("fbx")}>
             下载 FBX
           </Button>
-          <Button className={dowloadBtn} onClick={() => handleDownload("usdz")}>
-            下载 USDZ
+          <Button className={dowloadBtn} onClick={() => handleDownload("obj")}>
+            下载 OBJ
           </Button>
           <Button className={dowloadBtn} onClick={() => handleDownload("glb")}>
             下载 GLB
