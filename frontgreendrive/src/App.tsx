@@ -15,7 +15,6 @@ import ShowModel from "./ShowModel"
 import { RcFile } from "antd/es/upload"
 import Request from "./api"
 import { css } from "@emotion/css"
-import { useLocalStorageState } from "ahooks"
 /* type Response<T extends Record<string, any>> = {
   code: number
   data: T
