@@ -51,7 +51,7 @@ func (r *UploadRepository) UploadFsFileChunkModel(filePath, fileName, carName st
 		return primitive.NilObjectID, err
 	}
 
-	// 只修改3d汽车gltf的名字
+	// 只修改3d汽车模型中gltf格式文件的名字
 	if strings.HasSuffix(fileName, ".gltf") {
 		fileName = carName + ".gltf"
 	}

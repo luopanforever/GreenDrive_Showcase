@@ -151,12 +151,12 @@ func ConvertAndQueryModel(fileUri, outType string, timeoutSec int) (string, erro
 	// 	return "", fmt.Errorf("conversion request failed: %s", resp.Desc)
 	// }
 
-	// 等待转换处理完成
-	// time.Sleep(60 * time.Second) // 根据实际情况调整等待时间
+	// // 等待转换处理完成
+	// // time.Sleep(60 * time.Second) // 根据实际情况调整等待时间
 
-	// 查询转换结果
+	// // 查询转换结果
 	// outfile, err := QueryConversionResult(resp.FileID, appID, appKey, timeoutSec)
-	outfile, err := QueryConversionResult("dzod3dP7XekwhSj2", appID, appKey, timeoutSec)
+	outfile, err := QueryConversionResult("Yn0j74c7TV2NKSNG", appID, appKey, timeoutSec)
 	if err != nil {
 		return "", err
 	}
